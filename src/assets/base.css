@@ -1,0 +1,86 @@
+@import "tailwindcss";
+
+@theme {
+    /* Semantic Colors mapped to CSS variables */
+    --color-bg-base: var(--bg-base);
+    --color-bg-surface: var(--bg-surface);
+    --color-bg-surface-hover: var(--bg-surface-hover);
+    
+    --color-text-main: var(--text-main);
+    --color-text-muted: var(--text-muted);
+    
+    --color-border-base: var(--border-base);
+    
+    /* Brand Colors */
+    --color-primary: #135bec;
+    --color-primary-hover: #1e40af; /* approximate */
+
+    --font-display: Cairo, Lexend, sans-serif;
+    --font-brand: Lexend, Cairo, sans-serif;
+    --font-logo: Inter, sans-serif;
+}
+
+/* Base Variables - Light Mode (Default) */
+:root {
+    --bg-base: #f6f6f8;
+    --bg-surface: #ffffff;
+    --bg-surface-hover: #f9fafb;
+    
+    --text-main: #111318;
+    --text-muted: #616f89;
+    
+    --border-base: #dbdfe6;
+}
+
+/* Dark Mode Overrides */
+.dark {
+    --bg-base: #101622;
+    --bg-surface: rgba(255, 255, 255, 0.05);
+    --bg-surface-hover: rgba(255, 255, 255, 0.1);
+    
+    --text-main: #ffffff;
+    --text-muted: #9ca3af;
+    
+    --border-base: rgba(255, 255, 255, 0.1);
+}
+
+/* Base Styles */
+body {
+    font-family: 'Cairo', 'Lexend', sans-serif;
+    background-color: var(--bg-base);
+    color: var(--text-main);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Utility Classes for Custom Needs */
+.illustration-bg {
+    background: linear-gradient(135deg, rgba(19, 91, 236, 0.9) 0%, rgba(19, 91, 236, 0.7) 100%), url('https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=2070&auto=format&fit=crop');
+    background-size: cover;
+    background-position: center;
+}
+
+.brand-text {
+    font-family: 'Lexend', sans-serif;
+}
+
+.font-logo {
+    font-family: 'Inter', sans-serif;
+}
+
+.material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+.logo-icon-fill {
+    font-variation-settings: 'FILL' 1, 'wght' 700, 'GRAD' 0, 'opsz' 48;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
