@@ -142,8 +142,12 @@ remember: false
 
 const handleLogin = () => {
     console.log('Login attempt:', form)
-    // Simulate successful login
-    router.push('/student/dashboard')
+    // Simulate successful login based on role
+    if (form.role === 'instructor') {
+        router.push('/instructor/dashboard')
+    } else {
+        router.push('/student/dashboard')
+    }
 }
 </script>
 

@@ -35,13 +35,13 @@
 /* Dark Mode Overrides */
 .dark {
     --bg-base: #101622;
-    --bg-surface: rgba(255, 255, 255, 0.05);
-    --bg-surface-hover: rgba(255, 255, 255, 0.1);
+    --bg-surface: #1a2130;
+    --bg-surface-hover: #232b3c;
     
     --text-main: #ffffff;
-    --text-muted: #9ca3af;
+    --text-muted: #a1abbd;
     
-    --border-base: rgba(255, 255, 255, 0.1);
+    --border-base: #2d3648;
 }
 
 /* Base Styles */
