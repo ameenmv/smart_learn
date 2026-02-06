@@ -141,9 +141,9 @@ remember: false
 })
 
 const handleLogin = () => {
-console.log('Login attempt:', form)
-// Here you would implement your Zod validation and store call
-alert('Login functionality to be implemented needs API.')
+    console.log('Login attempt:', form)
+    // Simulate successful login
+    router.push('/student/dashboard')
 }
 </script>
 

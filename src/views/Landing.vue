@@ -45,9 +45,9 @@
               </p>
             </div>
             <div class="flex flex-wrap gap-4">
-              <button class="flex min-w-[160px] cursor-pointer items-center justify-center rounded-xl h-14 px-8 bg-primary text-white text-lg font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] transition-transform active:scale-95">
+              <RouterLink to="/register" class="flex min-w-[160px] cursor-pointer items-center justify-center rounded-xl h-14 px-8 bg-primary text-white text-lg font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] transition-transform active:scale-95">
                 <span>ابدأ الآن مجاناً</span>
-              </button>
+              </RouterLink>
               <button class="flex min-w-[160px] cursor-pointer items-center justify-center rounded-xl h-14 px-8 bg-bg-surface border border-border-base text-text-main text-lg font-bold hover:bg-bg-surface-hover transition-colors">
                 <span>طلب نسخة تجريبية</span>
               </button>
