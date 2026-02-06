@@ -4,7 +4,7 @@ import PrimeVue from 'primevue/config'
 import { createApp } from 'vue'
 import App from './App.vue'
 import './assets/base.css'
-import router from './router'
+import router from './Router'
 
 const app = createApp(App)
 
