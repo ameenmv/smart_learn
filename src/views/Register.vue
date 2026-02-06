@@ -125,6 +125,9 @@
 <script setup>
 import { reactive, ref } from 'vue'
 
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 const showPassword = ref(false)
 const form = reactive({
 role: 'student',
@@ -137,6 +140,6 @@ agreeTerms: false
 
 const handleRegister = () => {
 console.log('Register attempt:', form)
-alert('Register functionality to be implemented needs API.')
+router.push('/student/dashboard')
 }
 </script>

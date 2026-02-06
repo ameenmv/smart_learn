@@ -54,10 +54,10 @@
     </div>
 
     <!-- Logout -->
-    <button class="flex items-center justify-center gap-2 rounded-lg h-11 px-4 bg-bg-surface-hover text-text-main text-sm font-bold hover:bg-red-50 hover:text-red-600 transition-all cursor-pointer">
+    <RouterLink to="/" class="flex items-center justify-center gap-2 rounded-lg h-11 px-4 bg-bg-surface-hover text-text-main text-sm font-bold hover:bg-red-50 hover:text-red-600 transition-all cursor-pointer">
       <span class="material-symbols-outlined">logout</span>
       <span>تسجيل الخروج</span>
-    </button>
+    </RouterLink>
   </aside>
 </template>
 
