@@ -1,5 +1,26 @@
 <template>
   <div class="max-w-[1440px] mx-auto font-display h-full flex flex-col">
+    <!-- Toast Notification -->
+    <Transition name="toast">
+        <div v-if="toast.show" 
+             class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 px-6 py-4 rounded-xl shadow-xl border backdrop-blur-md transition-all duration-300 min-w-[320px] cursor-pointer hover:scale-[1.02]"
+             :class="toast.type === 'success' ? 'bg-emerald-50/90 border-emerald-200 dark:bg-emerald-900/90 dark:border-emerald-800' : 'bg-red-50/90 border-red-200 dark:bg-red-900/90 dark:border-red-800'"
+             @click="toast.show = false">
+          <div class="p-2 rounded-full" :class="toast.type === 'success' ? 'bg-emerald-100 dark:bg-emerald-800 text-emerald-600 dark:text-emerald-200' : 'bg-red-100 dark:bg-red-800 text-red-600 dark:text-red-200'">
+            <span class="material-symbols-outlined text-xl">
+                {{ toast.type === 'success' ? 'check_circle' : 'error' }}
+            </span>
+          </div>
+          <div class="flex flex-col flex-1">
+            <h4 class="font-bold text-sm" :class="toast.type === 'success' ? 'text-emerald-900 dark:text-emerald-100' : 'text-red-900 dark:text-red-100'">{{ toast.title }}</h4>
+            <p class="text-xs opacity-90" :class="toast.type === 'success' ? 'text-emerald-800 dark:text-emerald-200' : 'text-red-800 dark:text-red-200'">{{ toast.message }}</p>
+          </div>
+          <button class="hover:bg-black/5 dark:hover:bg-white/5 rounded-full p-1 transition-colors">
+            <span class="material-symbols-outlined text-lg opacity-60">close</span>
+          </button>
+        </div>
+    </Transition>
+
     <!-- Breadcrumb -->
     <nav class="flex items-center gap-2 mb-6 text-sm flex-shrink-0">
       <RouterLink class="text-text-muted hover:text-primary transition-colors" to="/student/courses">جامعة الملك سعود</RouterLink>
@@ -127,9 +148,10 @@
               <span class="material-symbols-outlined">download</span>
               الملخص
             </button>
-            <button class="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors cursor-pointer shadow-sm">
-              <span class="material-symbols-outlined">check</span>
-              تحديد كمكتمل
+            <button @click="markComplete" :disabled="isCompleting" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors cursor-pointer shadow-sm disabled:opacity-70 disabled:cursor-not-allowed">
+              <span v-if="isCompleting" class="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+              <span v-else class="material-symbols-outlined">check</span>
+              <span>{{ isCompleting ? 'جاري التحديث...' : 'تحديد كمكتمل' }}</span>
             </button>
           </div>
         </div>
@@ -185,3 +207,47 @@
     </div>
   </div>
 </template>
+
+<script setup>
+import { reactive, ref } from 'vue';
+
+const isCompleting = ref(false);
+
+const toast = reactive({
+    show: false,
+    title: '',
+    message: '',
+    type: 'success'
+});
+
+const showToast = (title, message, type = 'success') => {
+    toast.title = title;
+    toast.message = message;
+    toast.type = type;
+    toast.show = true;
+    setTimeout(() => {
+        toast.show = false;
+    }, 3000);
+};
+
+const markComplete = () => {
+    isCompleting.value = true;
+    setTimeout(() => {
+        isCompleting.value = false;
+        showToast('أحسنت!', 'تم تحديد المحاضرة كمكتملة');
+    }, 1000);
+};
+</script>
+
+<style scoped>
+.toast-enter-active,
+.toast-leave-active {
+    transition: all 0.3s ease;
+}
+
+.toast-enter-from,
+.toast-leave-to {
+    opacity: 0;
+    transform: translate(-50%, 20px);
+}
+</style>

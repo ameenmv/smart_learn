@@ -39,23 +39,14 @@ const toggleDark = useToggle(isDark)
           </div>
         </button>
 
-        <!-- Notifications -->
-        <button class="relative p-2 rounded-full bg-bg-surface-hover text-text-muted hover:bg-primary/10 hover:text-primary transition-all cursor-pointer">
-          <span class="material-symbols-outlined">notifications</span>
-          <span class="absolute top-2 left-2 size-2 bg-red-500 rounded-full border-2 border-bg-surface"></span>
-        </button>
 
-        <!-- Messages -->
-        <button class="p-2 rounded-full bg-bg-surface-hover text-text-muted hover:bg-primary/10 hover:text-primary transition-all cursor-pointer">
-          <span class="material-symbols-outlined">chat_bubble</span>
-        </button>
 
         <div class="h-8 w-[1px] bg-border-base mx-1"></div>
         
         <!-- User Avatar (Small) -->
-        <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 cursor-pointer border border-border-base hover:border-primary transition-all" 
+        <RouterLink to="/student/profile" class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 cursor-pointer border border-border-base hover:border-primary transition-all block" 
              aria-label="قائمة المستخدم"
-             style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAjVsJRFTmoARmuaRiCxWdwht3h6qxDiRI4-tVB-JTxYUh9OvLSJSY3LjwCVaZOojuKgd4fwc87kuKXHQI1lzhfaV0a287k0pni8wTrw-Bar1NEqTZpIkZfe1i_GW0v0CFbLFce2t01bCG0ABrmFeEpbEK4a2byr5R-Zp-n4OiZyS4vqrXgLxzcjVWMt3G8czXGDPtpC4zBe8e7UVG3CHoGpQjrZmA0Ke3aBDCLa_DV5xH611nnw6i4ELDlkPDzwj_MnWatgZJt9Od8");'></div>
+             style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAjVsJRFTmoARmuaRiCxWdwht3h6qxDiRI4-tVB-JTxYUh9OvLSJSY3LjwCVaZOojuKgd4fwc87kuKXHQI1lzhfaV0a287k0pni8wTrw-Bar1NEqTZpIkZfe1i_GW0v0CFbLFce2t01bCG0ABrmFeEpbEK4a2byr5R-Zp-n4OiZyS4vqrXgLxzcjVWMt3G8czXGDPtpC4zBe8e7UVG3CHoGpQjrZmA0Ke3aBDCLa_DV5xH611nnw6i4ELDlkPDzwj_MnWatgZJt9Od8");'></RouterLink>
       </div>
     </div>
   </header>

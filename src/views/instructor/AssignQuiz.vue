@@ -1,5 +1,26 @@
 <template>
   <div class="flex flex-col h-full bg-bg-base text-text-main font-sans transition-colors duration-300">
+    <!-- Toast Notification -->
+    <Transition name="toast">
+        <div v-if="toast.show" 
+             class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 px-6 py-4 rounded-xl shadow-xl border backdrop-blur-md transition-all duration-300 min-w-[320px] cursor-pointer hover:scale-[1.02]"
+             :class="toast.type === 'success' ? 'bg-emerald-50/90 border-emerald-200 dark:bg-emerald-900/90 dark:border-emerald-800' : 'bg-red-50/90 border-red-200 dark:bg-red-900/90 dark:border-red-800'"
+             @click="toast.show = false">
+          <div class="p-2 rounded-full" :class="toast.type === 'success' ? 'bg-emerald-100 dark:bg-emerald-800 text-emerald-600 dark:text-emerald-200' : 'bg-red-100 dark:bg-red-800 text-red-600 dark:text-red-200'">
+            <span class="material-symbols-outlined text-xl">
+                {{ toast.type === 'success' ? 'check_circle' : 'error' }}
+            </span>
+          </div>
+          <div class="flex flex-col flex-1">
+            <h4 class="font-bold text-sm" :class="toast.type === 'success' ? 'text-emerald-900 dark:text-emerald-100' : 'text-red-900 dark:text-red-100'">{{ toast.title }}</h4>
+            <p class="text-xs opacity-90" :class="toast.type === 'success' ? 'text-emerald-800 dark:text-emerald-200' : 'text-red-800 dark:text-red-200'">{{ toast.message }}</p>
+          </div>
+          <button class="hover:bg-black/5 dark:hover:bg-white/5 rounded-full p-1 transition-colors">
+            <span class="material-symbols-outlined text-lg opacity-60">close</span>
+          </button>
+        </div>
+    </Transition>
+
     <header class="sticky top-0 z-10 bg-bg-surface/80 backdrop-blur-md border-b border-border-base px-8 h-16 flex items-center justify-between transition-colors duration-300 shrink-0">
       <div class="flex items-center gap-3 flex-row-reverse">
         <div class="bg-primary text-white p-2 rounded-xl flex items-center justify-center">
@@ -39,7 +60,7 @@
                 <label class="block text-sm font-bold mb-2 text-text-main">اختر المقرر الدراسي</label>
                 <div class="relative">
                   <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-text-muted">search</span>
-                  <select class="w-full h-12 pr-12 pl-4 bg-bg-base border-border-base rounded-xl text-sm focus:ring-2 focus:ring-primary/20 appearance-none text-text-main">
+                  <select v-model="formData.course" class="w-full h-12 pr-12 pl-4 bg-bg-base border-border-base rounded-xl text-sm focus:ring-2 focus:ring-primary/20 appearance-none text-text-main outline-none">
                     <option value="">ابحث عن اسم المقرر...</option>
                     <option value="1">مقدمة في الذكاء الاصطناعي (CS-102)</option>
                     <option value="2">هياكل البيانات والخوارزميات (CS-205)</option>
@@ -51,22 +72,22 @@
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label class="block text-sm font-bold mb-2 text-text-main">تاريخ البدء</label>
-                  <input class="w-full h-12 px-4 bg-bg-base border-border-base rounded-xl text-sm focus:ring-2 focus:ring-primary/20 text-text-main" type="date"/>
+                  <input v-model="formData.startDate" class="w-full h-12 px-4 bg-bg-base border-border-base rounded-xl text-sm focus:ring-2 focus:ring-primary/20 text-text-main outline-none" type="date"/>
                 </div>
                 <div>
                   <label class="block text-sm font-bold mb-2 text-text-main">تاريخ الانتهاء</label>
-                  <input class="w-full h-12 px-4 bg-bg-base border-border-base rounded-xl text-sm focus:ring-2 focus:ring-primary/20 text-text-main" type="date"/>
+                  <input v-model="formData.endDate" class="w-full h-12 px-4 bg-bg-base border-border-base rounded-xl text-sm focus:ring-2 focus:ring-primary/20 text-text-main outline-none" type="date"/>
                 </div>
                 <div>
                   <label class="block text-sm font-bold mb-2 text-text-main">المدة الزمنية (بالدقائق)</label>
                   <div class="relative">
-                    <input class="w-full h-12 px-4 bg-bg-base border-border-base rounded-xl text-sm focus:ring-2 focus:ring-primary/20 text-text-main" placeholder="60" type="number"/>
+                    <input v-model="formData.duration" class="w-full h-12 px-4 bg-bg-base border-border-base rounded-xl text-sm focus:ring-2 focus:ring-primary/20 text-text-main outline-none" placeholder="60" type="number"/>
                     <span class="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted text-xs font-bold">دقيقة</span>
                   </div>
                 </div>
                 <div>
                   <label class="block text-sm font-bold mb-2 text-text-main">عدد المحاولات المسموحة</label>
-                  <input class="w-full h-12 px-4 bg-bg-base border-border-base rounded-xl text-sm focus:ring-2 focus:ring-primary/20 text-text-main" placeholder="1" type="number"/>
+                  <input v-model="formData.attempts" class="w-full h-12 px-4 bg-bg-base border-border-base rounded-xl text-sm focus:ring-2 focus:ring-primary/20 text-text-main outline-none" placeholder="1" type="number"/>
                 </div>
               </div>
               <hr class="border-border-base"/>
@@ -81,8 +102,8 @@
                     </div>
                   </div>
                   <label class="relative inline-flex items-center cursor-pointer">
-                    <input checked="" class="sr-only peer" type="checkbox"/>
-                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-[-100%] rtl:peer-checked:after:translate-x-[-1.25rem] peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:right-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+                    <input v-model="formData.showResults" class="sr-only peer" type="checkbox"/>
+                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-[-100%] rtl:peer-checked:after:translate-x-[-1.25rem] peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:right-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary transition-colors"></div>
                   </label>
                 </div>
                 <div class="flex items-center justify-between p-4 bg-bg-base rounded-xl">
@@ -94,17 +115,21 @@
                     </div>
                   </div>
                   <label class="relative inline-flex items-center cursor-pointer">
-                    <input class="sr-only peer" type="checkbox"/>
-                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-[-100%] rtl:peer-checked:after:translate-x-[-1.25rem] peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:right-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+                    <input v-model="formData.randomize" class="sr-only peer" type="checkbox"/>
+                    <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-[-100%] rtl:peer-checked:after:translate-x-[-1.25rem] peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:right-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary transition-colors"></div>
                   </label>
                 </div>
               </div>
             </div>
             <div class="flex items-center justify-end gap-4 pt-4">
-              <button class="px-8 py-3 rounded-xl font-bold text-text-muted hover:bg-bg-base transition-colors cursor-pointer">حفظ كمسودة</button>
-              <button class="bg-primary text-white px-8 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-primary/25 hover:scale-[1.02] transition-transform active:scale-95 cursor-pointer">
-                <span class="material-symbols-outlined">send</span>
-                <span>نشر الاختبار وتعيينه</span>
+              <button @click="saveDraft" :disabled="isSaving" class="px-8 py-3 rounded-xl font-bold text-text-muted hover:bg-bg-base transition-colors cursor-pointer flex items-center gap-2">
+                 <span v-if="isSaving" class="size-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></span>
+                 <span>{{ isSaving ? 'جاري الحفظ...' : 'حفظ كمسودة' }}</span>
+              </button>
+              <button @click="publishQuiz" :disabled="isPublishing" class="bg-primary text-white px-8 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-primary/25 hover:scale-[1.02] transition-transform active:scale-95 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed">
+                <span v-if="isPublishing" class="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                <span v-else class="material-symbols-outlined">send</span>
+                <span>{{ isPublishing ? 'جاري النشر...' : 'نشر الاختبار وتعيينه' }}</span>
               </button>
             </div>
           </div>
@@ -159,13 +184,80 @@
 </template>
 
 <script setup>
+import { reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
+
 const router = useRouter();
+const isSaving = ref(false);
+const isPublishing = ref(false);
+
+const formData = reactive({
+    course: '',
+    startDate: '',
+    endDate: '',
+    duration: '',
+    attempts: '',
+    showResults: true,
+    randomize: false
+});
+
+const toast = reactive({
+    show: false,
+    title: '',
+    message: '',
+    type: 'success'
+});
+
+const showToast = (title, message, type = 'success') => {
+    toast.title = title;
+    toast.message = message;
+    toast.type = type;
+    toast.show = true;
+    setTimeout(() => {
+        toast.show = false;
+    }, 3000);
+};
+
+const saveDraft = () => {
+    isSaving.value = true;
+    setTimeout(() => {
+        isSaving.value = false;
+        showToast('تم الحفظ', 'تم حفظ إعدادات التعيين كمسودة');
+    }, 1500);
+};
+
+const publishQuiz = () => {
+    isPublishing.value = true;
+    setTimeout(() => {
+        isPublishing.value = false;
+        showToast('تم النشر', 'تم تعيين الاختبار للمقرر بنجاح');
+        
+        // Clear form
+        formData.course = '';
+        formData.startDate = '';
+        formData.endDate = '';
+        formData.duration = '';
+        formData.attempts = '';
+        formData.showResults = true;
+        formData.randomize = false;
+    }, 2000);
+};
 </script>
 
 <style scoped>
 input[type="date"]::-webkit-calendar-picker-indicator {
     filter: invert(0.5);
     cursor: pointer;
+}
+
+.toast-enter-active,
+.toast-leave-active {
+    transition: all 0.3s ease;
+}
+
+.toast-enter-from,
+.toast-leave-to {
+    opacity: 0;
+    transform: translate(-50%, 20px);
 }
 </style>

@@ -1,6 +1,14 @@
 <template>
   <aside class="w-72 bg-bg-surface border-l border-border-base flex flex-col fixed h-full z-20 transition-colors duration-300">
     <div class="p-6 flex flex-col h-full overflow-y-auto">
+      <!-- Logo -->
+      <div class="flex items-center gap-2 mb-8 border-b border-border-base pb-6 justify-center">
+        <div class="bg-primary rounded-xl size-9 flex items-center justify-center">
+          <span class="material-symbols-outlined text-white text-xl" style="font-variation-settings: 'FILL' 1;">school</span>
+        </div>
+        <h2 class="text-xl font-bold tracking-tight text-text-main font-display">Smart Learn</h2>
+      </div>
+
       <div class="flex items-center gap-3 mb-8">
         <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12 border-2 border-primary/20" 
              aria-label="User profile picture of an instructor" 

@@ -1,47 +1,58 @@
 <template>
 <div class="flex min-h-screen w-full overflow-hidden bg-bg-base transition-colors duration-300">
+    <!-- Toast Notification -->
+    <Transition name="toast">
+        <div v-if="toast.show" 
+             class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 px-6 py-4 rounded-xl shadow-xl border backdrop-blur-md transition-all duration-300 min-w-[320px] cursor-pointer hover:scale-[1.02]"
+             :class="toast.type === 'success' ? 'bg-emerald-50/90 border-emerald-200 dark:bg-emerald-900/90 dark:border-emerald-800' : 'bg-red-50/90 border-red-200 dark:bg-red-900/90 dark:border-red-800'"
+             @click="toast.show = false">
+          <div class="p-2 rounded-full" :class="toast.type === 'success' ? 'bg-emerald-100 dark:bg-emerald-800 text-emerald-600 dark:text-emerald-200' : 'bg-red-100 dark:bg-red-800 text-red-600 dark:text-red-200'">
+            <span class="material-symbols-outlined text-xl">
+                {{ toast.type === 'success' ? 'check_circle' : 'error' }}
+            </span>
+          </div>
+          <div class="flex flex-col flex-1">
+            <h4 class="font-bold text-sm" :class="toast.type === 'success' ? 'text-emerald-900 dark:text-emerald-100' : 'text-red-900 dark:text-red-100'">{{ toast.title }}</h4>
+            <p class="text-xs opacity-90" :class="toast.type === 'success' ? 'text-emerald-800 dark:text-emerald-200' : 'text-red-800 dark:text-red-200'">{{ toast.message }}</p>
+          </div>
+          <button class="hover:bg-black/5 dark:hover:bg-white/5 rounded-full p-1 transition-colors">
+            <span class="material-symbols-outlined text-lg opacity-60">close</span>
+          </button>
+        </div>
+    </Transition>
+
 <!-- Left Side (Illustration) -->
-<div class="hidden lg:flex lg:w-1/2 bg-primary relative items-center justify-center p-12 overflow-hidden">
-    <div class="absolute inset-0 opacity-10 pointer-events-none">
-        <svg height="100%" width="100%" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-                <pattern height="40" id="grid" patternUnits="userSpaceOnUse" width="40">
-                    <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" stroke-width="1"></path>
-                </pattern>
-            </defs>
-            <rect fill="url(#grid)" height="100%" width="100%"></rect>
-        </svg>
-    </div>
-    <div class="relative z-10 text-center text-white max-w-lg">
-        <div class="mb-8 flex justify-center flex-col items-center gap-4">
-            <div class="bg-blue-600 p-4 rounded-2xl shadow-lg border border-blue-400/30 flex items-center justify-center w-24 h-24">
-                <span class="material-symbols-outlined text-5xl text-white logo-icon-fill">school</span>
+<div class="relative hidden w-full items-center justify-center lg:flex lg:w-1/2 illustration-bg" data-alt="students collaborating in a modern university library setting">
+    <div class="z-10 px-12 text-center text-white">
+        <div class="mb-10 flex flex-col items-center">
+            <div class="flex items-center gap-4 flex-row-reverse">
+                <div class="rounded-2xl bg-white/20 p-3 backdrop-blur-md">
+                    <span class="material-symbols-outlined text-4xl text-white" style="font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 48">school</span>
+                </div>
+                <h1 class="brand-text text-5xl font-bold tracking-tight text-white">Smart Learn</h1>
             </div>
         </div>
-        <h1 class="text-5xl font-bold mb-4 tracking-tight font-logo">Smart Learn</h1>
-        <p class="text-xl text-blue-100 mb-8 leading-relaxed">
-            منصة تعليمية متكاملة مصممة لتمكين الطلاب والأكاديميين من الوصول إلى تجربة تعليمية حديثة ومبتكرة.
+        <h2 class="mb-6 text-3xl font-bold leading-tight lg:text-4xl">منصة تعليمية متكاملة</h2>
+        <p class="mx-auto max-w-md text-lg font-medium leading-relaxed opacity-90">
+            تمكين الطلاب والأكاديميين من الوصول إلى تجربة تعليمية حديثة ومبتكرة عبر أحدث تقنيات التعليم الإلكتروني.
         </p>
-        <div class="w-full aspect-[4/3] bg-white/5 rounded-xl border border-white/20 overflow-hidden shadow-2xl">
-            <div class="w-full h-full bg-center bg-no-repeat bg-cover" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDaIreEq1PGo8L8e8tvb2fZirf4Ef8giO6fnApWFbJSU7O6sGQIIGTqQCVyIs4cAXZY8O4SKoIqVr7EqQIn-S7cir-j8FxgPicKqQJpM-yikFlfSnw0YpdGwvh6xMhztA51AiVroISWkUY3E8-yvQ2a-FXfT6D52zso0cKkibP1UB7NW9blEtB1gqm9wJply62n5hp-DMWWE0I3dubLoAHnrl2TGRsQ-rlSRudRj9mJ4vKrJw1W5YjLiV2Wt5ylf18mVk7taJdAa7EI');"></div>
+        <div class="mt-12 flex justify-center gap-4">
+            <div class="flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 backdrop-blur-sm">
+                <span class="material-symbols-outlined text-sm">verified_user</span>
+                <span class="text-sm">نظام آمن</span>
+            </div>
+            <div class="flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 backdrop-blur-sm">
+                <span class="material-symbols-outlined text-sm">school</span>
+                <span class="text-sm">معتمد أكاديمياً</span>
+            </div>
         </div>
     </div>
+    <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 32px 32px;"></div>
 </div>
 
 <!-- Right Side (Form) -->
 <div class="w-full lg:w-1/2 flex flex-col bg-bg-surface shadow-2xl lg:shadow-none">
-    <header class="flex items-center justify-between px-8 lg:px-12 py-6">
-        <div class="flex items-center gap-3 flex-row-reverse"> 
-            <div class="bg-primary flex items-center justify-center w-10 h-10 rounded-lg shadow-sm">
-                <span class="material-symbols-outlined text-white text-2xl logo-icon-fill">school</span>
-            </div>
-            <RouterLink to="/" class="text-2xl font-bold text-text-main font-logo tracking-tight">Smart Learn</RouterLink>
-        </div>
-        <div class="flex items-center gap-6">
-            <a class="text-sm font-medium text-text-muted hover:text-primary transition-colors" href="#">المساعدة</a>
-            <a class="text-sm font-medium text-text-muted hover:text-primary transition-colors" href="#">اتصل بنا</a>
-        </div>
-    </header>
+    <AuthNavbar />
     <main class="flex-1 flex flex-col justify-center px-8 lg:px-24 py-12">
         <div class="w-full max-w-md mx-auto">
             <div class="mb-10 text-right">
@@ -62,7 +73,7 @@
                         <input v-model="form.role" class="hidden peer" name="role" type="radio" value="instructor"/>
                         <div class="flex items-center justify-center gap-2 py-3 px-4 rounded-lg bg-transparent text-text-muted peer-checked:bg-bg-surface peer-checked:text-primary peer-checked:shadow-sm transition-all duration-200">
                             <span class="material-symbols-outlined text-xl">school</span>
-                            <span class="font-bold">دكتور</span>
+                            <span class="font-bold">محاضر</span>
                         </div>
                     </label>
                 </div>
@@ -96,9 +107,10 @@
                     <input v-model="form.remember" class="w-4 h-4 text-primary border-border-base rounded focus:ring-primary bg-bg-surface" id="remember" type="checkbox"/>
                     <label class="text-sm text-text-muted" for="remember">تذكرني على هذا الجهاز</label>
                 </div>
-                <button class="w-full h-12 bg-primary hover:bg-blue-700 text-white font-bold rounded-lg transition-colors shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2 cursor-pointer" type="submit">
-                    <span>تسجيل الدخول</span>
-                    <span class="material-symbols-outlined text-xl">login</span>
+                <button :disabled="isLoading" class="w-full h-12 bg-primary hover:bg-blue-700 text-white font-bold rounded-lg transition-colors shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed" type="submit">
+                    <span v-if="isLoading" class="size-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                    <span v-else>تسجيل الدخول</span>
+                    <span v-if="!isLoading" class="material-symbols-outlined text-xl">login</span>
                 </button>
             </form>
             <div class="mt-10 text-center">
@@ -113,25 +125,20 @@
             </div>
         </div>
     </main>
-    <footer class="px-8 lg:px-24 py-8 border-t border-border-base text-text-muted">
-        <div class="flex flex-col md:flex-row justify-between items-center gap-4 text-xs">
-            <p>© 2024 Smart Learn. جميع الحقوق محفوظة.</p>
-            <div class="flex gap-4">
-                <a class="hover:text-primary" href="#">سياسة الخصوصية</a>
-                <a class="hover:text-primary" href="#">شروط الخدمة</a>
-            </div>
-        </div>
-    </footer>
+    <AuthFooter />
 </div>
 </div>
 </template>
 
 <script setup>
+import AuthFooter from '@/components/common/AuthFooter.vue'
+import AuthNavbar from '@/components/common/AuthNavbar.vue'
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
 const showPassword = ref(false)
+const isLoading = ref(false)
 
 const form = reactive({
 role: 'student',
@@ -140,17 +147,49 @@ password: '',
 remember: false
 })
 
+const toast = reactive({
+    show: false,
+    title: '',
+    message: '',
+    type: 'success'
+});
+
+const showToast = (title, message, type = 'success') => {
+    toast.title = title;
+    toast.message = message;
+    toast.type = type;
+    toast.show = true;
+    setTimeout(() => {
+        toast.show = false;
+    }, 3000);
+};
+
 const handleLogin = () => {
-    console.log('Login attempt:', form)
-    // Simulate successful login based on role
-    if (form.role === 'instructor') {
-        router.push('/instructor/dashboard')
-    } else {
-        router.push('/student/dashboard')
-    }
+    isLoading.value = true;
+    setTimeout(() => {
+        isLoading.value = false;
+        showToast('تسجيل الدخول', 'تم تسجيل الدخول بنجاح، جاري تحويلك...');
+        
+        setTimeout(() => {
+            if (form.role === 'instructor') {
+                router.push('/instructor/dashboard')
+            } else {
+                router.push('/student/dashboard')
+            }
+        }, 1500);
+    }, 1500);
 }
 </script>
 
 <style scoped>
-/* Scoped styles specific to this page if needed, but most are global/tailwind */
+.toast-enter-active,
+.toast-leave-active {
+    transition: all 0.3s ease;
+}
+
+.toast-enter-from,
+.toast-leave-to {
+    opacity: 0;
+    transform: translate(-50%, 20px);
+}
 </style>

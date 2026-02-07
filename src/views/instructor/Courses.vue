@@ -5,10 +5,10 @@
         <h1 class="text-4xl font-black leading-tight text-text-main">إدارة الدورات</h1>
         <p class="text-text-muted mt-2 text-lg">قم بإدارة وتحديث الدورات التدريبية والطلاب المشتركين</p>
       </div>
-      <button class="bg-primary text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-primary/25 hover:scale-[1.02] transition-transform active:scale-95 cursor-pointer">
+      <RouterLink to="/instructor/lectures" class="bg-primary text-white px-6 py-3 rounded-xl font-bold flex items-center gap-2 shadow-lg shadow-primary/25 hover:scale-[1.02] transition-transform active:scale-95 cursor-pointer">
         <span class="material-symbols-outlined">add_circle</span>
         <span>إضافة دورة جديدة</span>
-      </button>
+      </RouterLink>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
       <div class="bg-bg-surface p-6 rounded-2xl border border-border-base shadow-sm transition-colors duration-300">

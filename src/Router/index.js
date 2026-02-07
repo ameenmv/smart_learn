@@ -58,6 +58,11 @@ const router = createRouter({
           path: 'certificates',
           name: 'student-certificates',
           component: () => import('../views/student/Certificates.vue')
+        },
+        {
+          path: 'schedule',
+          name: 'student-schedule',
+          component: () => import('../views/student/Schedule.vue')
         }
       ]
     },

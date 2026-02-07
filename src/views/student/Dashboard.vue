@@ -1,4 +1,6 @@
 <template>
+
+
   <div class="max-w-[1200px] mx-auto w-full flex flex-col gap-8 font-display">
     <!-- Welcome Section -->
     <section class="bg-bg-surface rounded-xl overflow-hidden shadow-sm border border-border-base transition-colors duration-300">
@@ -7,12 +9,12 @@
           <h3 class="text-3xl font-bold text-text-main mb-2">أهلاً بك مجدداً، أحمد 👋</h3>
           <p class="text-text-muted text-lg leading-relaxed mb-6">لقد أنجزت 75% من أهدافك الأسبوعية حتى الآن في Smart Learn. استمر في هذا الأداء المتميز.</p>
           <div class="flex gap-3">
-            <button class="bg-primary text-white px-6 py-2.5 rounded-lg font-bold text-sm shadow-lg shadow-primary/30 hover:bg-blue-700 transition-all cursor-pointer">
+            <RouterLink to="/student/schedule" class="bg-primary text-white px-6 py-2.5 rounded-lg font-bold text-sm shadow-lg shadow-primary/30 hover:bg-blue-700 transition-all cursor-pointer">
               عرض الجدول الدراسي
-            </button>
-            <button class="bg-bg-surface-hover text-text-main px-6 py-2.5 rounded-lg font-bold text-sm hover:bg-border-base transition-all cursor-pointer border border-border-base">
-              التقويم الأكاديمي
-            </button>
+            </RouterLink>
+            <RouterLink to="/student/schedule" class="bg-primary text-white px-6 py-2.5 rounded-lg font-bold text-sm shadow-lg shadow-primary/30 hover:bg-blue-700 transition-all cursor-pointer">
+              التقويم الأكاديمي            </RouterLink>
+          
           </div>
         </div>
         <div class="w-full md:w-1/3 h-48 bg-gradient-to-br from-primary/10 to-primary/30 rounded-xl flex items-center justify-center relative overflow-hidden">
@@ -62,7 +64,7 @@
     <section>
       <div class="flex items-center justify-between mb-6">
         <h2 class="text-xl font-bold text-text-main">تابع التعلم</h2>
-        <a class="text-primary text-sm font-bold hover:underline" href="#">عرض الكل</a>
+        <RouterLink class="text-primary text-sm font-bold hover:underline" to="/student/courses">عرض الكل</RouterLink>
       </div>
       <div class="flex gap-6 overflow-x-auto pb-4 no-scrollbar">
         <!-- Card 1 -->
@@ -82,7 +84,7 @@
                 <div class="bg-primary h-full rounded-full" style="width: 65%"></div>
               </div>
             </div>
-            <button class="w-full py-2 bg-primary/10 text-primary font-bold text-sm rounded-lg hover:bg-primary hover:text-white transition-all cursor-pointer">استكمال المحاضرة</button>
+            <RouterLink to="/courses/101" class="w-full flex items-center justify-center py-2 bg-primary/10 text-primary font-bold text-sm rounded-lg hover:bg-primary hover:text-white transition-all cursor-pointer">استكمال المحاضرة</RouterLink>
           </div>
         </div>
         <!-- Card 2 -->
@@ -102,7 +104,7 @@
                 <div class="bg-primary h-full rounded-full" style="width: 20%"></div>
               </div>
             </div>
-            <button class="w-full py-2 bg-primary/10 text-primary font-bold text-sm rounded-lg hover:bg-primary hover:text-white transition-all cursor-pointer">استكمال المحاضرة</button>
+            <RouterLink to="/courses/101" class="w-full flex items-center justify-center py-2 bg-primary/10 text-primary font-bold text-sm rounded-lg hover:bg-primary hover:text-white transition-all cursor-pointer">استكمال المحاضرة</RouterLink>
           </div>
         </div>
         <!-- Card 3 -->
@@ -122,7 +124,7 @@
                 <div class="bg-primary h-full rounded-full" style="width: 90%"></div>
               </div>
             </div>
-            <button class="w-full py-2 bg-primary/10 text-primary font-bold text-sm rounded-lg hover:bg-primary hover:text-white transition-all cursor-pointer">استكمال المحاضرة</button>
+            <RouterLink to="/student/courses/101" class="w-full flex items-center justify-center py-2 bg-primary/10 text-primary font-bold text-sm rounded-lg hover:bg-primary hover:text-white transition-all cursor-pointer">استكمال المحاضرة</RouterLink>
           </div>
         </div>
       </div>
@@ -229,3 +231,8 @@
     scrollbar-width: none;
 }
 </style>
+
+<script setup>
+import { RouterLink } from 'vue-router';
+</script>
+import { RouterLink } from 'vue-router';

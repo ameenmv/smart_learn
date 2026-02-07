@@ -1,5 +1,26 @@
 <template>
   <div class="max-w-5xl mx-auto space-y-6 font-display">
+    <!-- Toast Notification -->
+    <Transition name="toast">
+        <div v-if="toast.show" 
+             class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 px-6 py-4 rounded-xl shadow-xl border backdrop-blur-md transition-all duration-300 min-w-[320px] cursor-pointer hover:scale-[1.02]"
+             :class="toast.type === 'success' ? 'bg-emerald-50/90 border-emerald-200 dark:bg-emerald-900/90 dark:border-emerald-800' : 'bg-red-50/90 border-red-200 dark:bg-red-900/90 dark:border-red-800'"
+             @click="toast.show = false">
+          <div class="p-2 rounded-full" :class="toast.type === 'success' ? 'bg-emerald-100 dark:bg-emerald-800 text-emerald-600 dark:text-emerald-200' : 'bg-red-100 dark:bg-red-800 text-red-600 dark:text-red-200'">
+            <span class="material-symbols-outlined text-xl">
+                {{ toast.type === 'success' ? 'check_circle' : 'error' }}
+            </span>
+          </div>
+          <div class="flex flex-col flex-1">
+            <h4 class="font-bold text-sm" :class="toast.type === 'success' ? 'text-emerald-900 dark:text-emerald-100' : 'text-red-900 dark:text-red-100'">{{ toast.title }}</h4>
+            <p class="text-xs opacity-90" :class="toast.type === 'success' ? 'text-emerald-800 dark:text-emerald-200' : 'text-red-800 dark:text-red-200'">{{ toast.message }}</p>
+          </div>
+          <button class="hover:bg-black/5 dark:hover:bg-white/5 rounded-full p-1 transition-colors">
+            <span class="material-symbols-outlined text-lg opacity-60">close</span>
+          </button>
+        </div>
+    </Transition>
+
     <nav class="flex flex-wrap gap-2 text-sm font-medium">
       <RouterLink class="text-text-muted hover:text-primary transition-colors" to="/student/dashboard">الرئيسية</RouterLink>
       <span class="text-text-muted">/</span>
@@ -47,24 +68,30 @@
             المطلوب هو تصميم واجهة مستخدم لتطبيق جوال تعليمي. يجب أن يتضمن التصميم شاشة الدخول، الصفحة الرئيسية، وشاشة تفاصيل المادة. يرجى التأكد من اتباع معايير تجربة المستخدم المذكورة في المحاضرة الرابعة.
           </p>
         </div>
-        <div class="bg-bg-surface rounded-xl border-2 border-dashed border-border-base p-12 flex flex-col items-center justify-center text-center gap-4 hover:border-primary/50 transition-colors cursor-pointer group">
+        <div class="bg-bg-surface rounded-xl border-2 border-dashed border-border-base p-12 flex flex-col items-center justify-center text-center gap-4 hover:border-primary/50 transition-colors cursor-pointer group"
+             @click="triggerFileUpload"
+             @dragover.prevent
+             @drop.prevent="handleDrop">
           <div class="size-20 rounded-full bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform">
             <span class="material-symbols-outlined text-primary text-4xl">cloud_upload</span>
           </div>
           <div>
             <h4 class="text-xl font-bold text-text-main">اسحب الملف هنا أو تصفح من جهازك</h4>
-            <p class="text-text-muted mt-1">يدعم ملفات PDF, ZIP, JPG (بحد أقصى ٢٠ ميجابايت)</p>
+            <p v-if="!selectedFile" class="text-text-muted mt-1">يدعم ملفات PDF, ZIP, JPG (بحد أقصى ٢٠ ميجابايت)</p>
+            <p v-else class="text-primary font-bold mt-1 dir-ltr">{{ selectedFile.name }}</p>
           </div>
-          <input class="hidden" id="fileInput" type="file"/>
-          <button class="mt-2 text-primary font-bold hover:underline" onclick="document.getElementById('fileInput').click()">اختيار ملف من الجهاز</button>
+          <input class="hidden" ref="fileInput" type="file" @change="handleFileSelect"/>
+          <button class="mt-2 text-primary font-bold hover:underline" @click.stop="triggerFileUpload">اختيار ملف من الجهاز</button>
         </div>
         <div class="flex flex-wrap items-center gap-4">
-          <button class="flex-1 md:flex-none min-w-[180px] bg-primary text-white font-bold h-12 rounded-lg hover:bg-primary/90 transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/20 cursor-pointer">
-            <span class="material-symbols-outlined">send</span>
-            ارسال الواجب
+          <button @click="submitAssignment" :disabled="isSubmitting || !selectedFile" class="flex-1 md:flex-none min-w-[180px] bg-primary text-white font-bold h-12 rounded-lg hover:bg-primary/90 transition-all flex items-center justify-center gap-2 shadow-lg shadow-primary/20 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+            <span v-if="isSubmitting" class="size-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+            <span v-else class="material-symbols-outlined">send</span>
+            <span>{{ isSubmitting ? 'جاري الإرسال...' : 'ارسال الواجب' }}</span>
           </button>
-          <button class="flex-1 md:flex-none min-w-[150px] bg-bg-surface border border-border-base text-text-main font-bold h-12 rounded-lg hover:bg-bg-surface-hover transition-all cursor-pointer">
-            حفظ كمسودة
+          <button @click="saveDraft" :disabled="isSaving" class="flex-1 md:flex-none min-w-[150px] bg-bg-surface border border-border-base text-text-main font-bold h-12 rounded-lg hover:bg-bg-surface-hover transition-all cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+             <span v-if="isSaving" class="size-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin"></span>
+             <span>{{ isSaving ? 'جاري الحفظ...' : 'حفظ كمسودة' }}</span>
           </button>
         </div>
       </div>
@@ -114,3 +141,85 @@
     </div>
   </div>
 </template>
+
+<script setup>
+import { reactive, ref } from 'vue';
+
+const fileInput = ref(null);
+const selectedFile = ref(null);
+const isSubmitting = ref(false);
+const isSaving = ref(false);
+
+const toast = reactive({
+    show: false,
+    title: '',
+    message: '',
+    type: 'success'
+});
+
+const showToast = (title, message, type = 'success') => {
+    toast.title = title;
+    toast.message = message;
+    toast.type = type;
+    toast.show = true;
+    setTimeout(() => {
+        toast.show = false;
+    }, 3000);
+};
+
+const triggerFileUpload = () => {
+    fileInput.value.click();
+};
+
+const handleFileSelect = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+        selectedFile.value = file;
+         showToast('تم اختيار الملف', `تم ارفاق الملف ${file.name} بنجاح`);
+    }
+};
+
+const handleDrop = (event) => {
+    const file = event.dataTransfer.files[0];
+    if (file) {
+        selectedFile.value = file;
+        showToast('تم اختيار الملف', `تم ارفاق الملف ${file.name} بنجاح`);
+    }
+};
+
+const submitAssignment = () => {
+    if (!selectedFile.value) {
+        showToast('خطأ', 'يرجى اختيار ملف لإرفاقه أولاً', 'error');
+        return;
+    }
+    isSubmitting.value = true;
+    setTimeout(() => {
+        isSubmitting.value = false;
+        showToast('تم الإرسال', 'تم تسليم الواجب بنجاح', 'success');
+        // Reset file
+        selectedFile.value = null;
+        if (fileInput.value) fileInput.value.value = '';
+    }, 2000);
+};
+
+const saveDraft = () => {
+    isSaving.value = true;
+     setTimeout(() => {
+        isSaving.value = false;
+        showToast('تم الحفظ', 'تم حفظ الواجب كمسودة');
+    }, 1500);
+};
+</script>
+
+<style scoped>
+.toast-enter-active,
+.toast-leave-active {
+    transition: all 0.3s ease;
+}
+
+.toast-enter-from,
+.toast-leave-to {
+    opacity: 0;
+    transform: translate(-50%, 20px);
+}
+</style>
