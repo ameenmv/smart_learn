@@ -149,7 +149,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 
 const totalQuestions = 20;
 const currentQuestionIndex = ref(4); // Start at index 4 (Question 5)
@@ -230,31 +230,7 @@ onUnmounted(() => {
     if (timerInterval) clearInterval(timerInterval);
 });
 </script>
-    <!-- Footer -->
-    <footer class="w-full bg-bg-surface border-t border-border-base py-4 mt-auto transition-colors duration-300">
-      <div class="max-w-[1280px] mx-auto px-10 flex flex-wrap justify-center sm:justify-between items-center gap-4">
-        <div class="flex gap-2">
-          <span class="flex items-center gap-1 text-text-muted text-sm">
-            <span class="size-2 rounded-full bg-green-500"></span>
-            متصل بالنظام
-          </span>
-          <span class="text-border-base px-2">|</span>
-          <span class="text-text-muted text-sm">آخر حفظ تلقائي: منذ ثوانٍ قليلة</span>
-        </div>
-        <div class="flex items-center gap-4">
-          <button class="flex items-center gap-2 text-text-muted text-sm hover:text-primary transition-colors cursor-pointer">
-            <span class="material-symbols-outlined text-lg">help</span>
-            الدعم الفني
-          </button>
-          <button class="flex items-center gap-2 text-text-muted text-sm hover:text-primary transition-colors cursor-pointer">
-            <span class="material-symbols-outlined text-lg">flag</span>
-            إبلاغ عن خطأ
-          </button>
-        </div>
-      </div>
-    </footer>
-  </div>
-</template>
+
 
 <style scoped>
 .radio-dot {
