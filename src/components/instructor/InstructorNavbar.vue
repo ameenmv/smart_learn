@@ -29,13 +29,7 @@ const toggleDark = useToggle(isDark)
             <span class="material-symbols-outlined !text-[20px]">dark_mode</span>
           </div>
         </button>
-        <button class="p-2 rounded-lg bg-bg-base text-text-muted hover:bg-bg-base-hover relative transition-colors cursor-pointer">
-          <span class="material-symbols-outlined">notifications</span>
-          <span class="absolute top-2 right-2 size-2 bg-red-500 rounded-full border-2 border-bg-surface"></span>
-        </button>
-        <button class="p-2 rounded-lg bg-bg-base text-text-muted hover:bg-bg-base-hover transition-colors cursor-pointer">
-          <span class="material-symbols-outlined">help</span>
-        </button>
+        
       </div>
     </div>
   </header>

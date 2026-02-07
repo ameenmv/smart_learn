@@ -11,9 +11,9 @@
         </div>
         <nav class="hidden md:flex items-center gap-8">
           <a class="text-text-main text-sm font-medium hover:text-primary transition-colors" href="#">الرئيسية</a>
+          <a class="text-text-main text-sm font-medium hover:text-primary transition-colors" href="#about">عن المنصة</a>
           <a class="text-text-main text-sm font-medium hover:text-primary transition-colors" href="#features">المميزات</a>
-          <a class="text-text-main text-sm font-medium hover:text-primary transition-colors" href="#">عن المنصة</a>
-          <a class="text-text-main text-sm font-medium hover:text-primary transition-colors" href="#">اتصل بنا</a>
+          <a class="text-text-main text-sm font-medium hover:text-primary transition-colors" href="#contact">اتصل بنا</a>
         </nav>
         <div class="flex items-center gap-3">
           <button aria-label="تبديل الوضع الليلي" class="w-10 h-10 flex items-center justify-center rounded-lg bg-bg-surface-hover text-text-main hover:bg-bg-surface-hover/80 transition-all border border-transparent" @click="toggleDark()">
@@ -32,7 +32,7 @@
 
     <main class="max-w-[1440px] mx-auto overflow-hidden">
       <!-- Hero Section -->
-      <section class="px-6 lg:px-20 py-12 lg:py-24">
+      <section class="px-6 lg:px-20 py-12 lg:py-24" id="about">
         <div class="flex flex-col-reverse lg:flex-row gap-12 items-center">
           <div ref="heroText" :class="['flex flex-col gap-8 flex-1 transition-all duration-1000 transform', heroTextIsVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0']">
             <div class="flex flex-col gap-4">
@@ -138,7 +138,7 @@
       </section>
 
       <!-- Footer -->
-      <footer class="px-6 lg:px-20 pt-20 pb-10 border-t border-border-base mt-10">
+      <footer class="px-6 lg:px-20 pt-20 pb-10 border-t border-border-base mt-10" id="contact">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
           <div class="flex flex-col gap-6">
             <div class="flex items-center gap-3">

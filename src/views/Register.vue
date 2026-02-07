@@ -1,5 +1,26 @@
 <template>
 <div class="flex min-h-screen flex-col lg:flex-row bg-bg-base transition-colors duration-300">
+<!-- Toast Notification -->
+<Transition name="toast">
+    <div v-if="toast.show" 
+         class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 px-6 py-4 rounded-xl shadow-xl border backdrop-blur-md transition-all duration-300 min-w-[320px] cursor-pointer hover:scale-[1.02]"
+         :class="toast.type === 'success' ? 'bg-emerald-50/90 border-emerald-200 dark:bg-emerald-900/90 dark:border-emerald-800' : 'bg-red-50/90 border-red-200 dark:bg-red-900/90 dark:border-red-800'"
+         @click="toast.show = false">
+      <div class="p-2 rounded-full" :class="toast.type === 'success' ? 'bg-emerald-100 dark:bg-emerald-800 text-emerald-600 dark:text-emerald-200' : 'bg-red-100 dark:bg-red-800 text-red-600 dark:text-red-200'">
+        <span class="material-symbols-outlined text-xl">
+            {{ toast.type === 'success' ? 'check_circle' : 'error' }}
+        </span>
+      </div>
+      <div class="flex flex-col flex-1">
+        <h4 class="font-bold text-sm" :class="toast.type === 'success' ? 'text-emerald-900 dark:text-emerald-100' : 'text-red-900 dark:text-red-100'">{{ toast.title }}</h4>
+        <p class="text-xs opacity-90" :class="toast.type === 'success' ? 'text-emerald-800 dark:text-emerald-200' : 'text-red-800 dark:text-red-200'">{{ toast.message }}</p>
+      </div>
+      <button class="hover:bg-black/5 dark:hover:bg-white/5 rounded-full p-1 transition-colors">
+        <span class="material-symbols-outlined text-lg opacity-60">close</span>
+      </button>
+    </div>
+</Transition>
+
 <!-- Left Side (Illustration) -->
 <div class="relative hidden w-full items-center justify-center lg:flex lg:w-1/2 illustration-bg" data-alt="students collaborating in a modern university library setting">
     <div class="z-10 px-12 text-center text-white">
@@ -31,20 +52,7 @@
 
 <!-- Right Side (Form) -->
 <div class="flex w-full flex-col bg-bg-surface lg:w-1/2">
-    <header class="flex items-center justify-between px-6 py-6 lg:px-12 lg:py-8">
-        <div class="flex items-center gap-3 lg:hidden">
-            <div class="flex items-center gap-2 flex-row-reverse">
-                <div class="rounded-lg bg-primary p-1.5">
-                    <span class="material-symbols-outlined text-xl text-white" style="font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24">school</span>
-                </div>
-                <h2 class="brand-text text-xl font-bold text-text-main">Smart Learn</h2>
-            </div>
-        </div>
-        <div class="flex items-center gap-4 mr-auto lg:mr-0">
-            <span class="text-sm font-medium text-text-muted">العربية</span>
-            <span class="material-symbols-outlined text-text-muted">language</span>
-        </div>
-    </header>
+    <AuthNavbar />
     <main class="flex flex-1 flex-col justify-center px-6 pb-12 lg:px-24">
         <div class="mx-auto w-full max-w-[480px]">
             <div class="mb-8 text-right">
@@ -103,8 +111,9 @@
                         أوافق على <a class="text-primary hover:underline" href="#">شروط الخدمة</a> و <a class="text-primary hover:underline" href="#">سياسة الخصوصية</a>
                     </label>
                 </div>
-                <button class="w-full rounded-xl bg-primary py-4 text-base font-bold text-white shadow-lg shadow-primary/30 transition-all hover:bg-primary/90 hover:shadow-primary/40 active:scale-[0.98] cursor-pointer" type="submit">
-                    إنشاء حساب
+                <button :disabled="isLoading" class="w-full rounded-xl bg-primary py-4 text-base font-bold text-white shadow-lg shadow-primary/30 transition-all hover:bg-primary/90 hover:shadow-primary/40 active:scale-[0.98] cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2" type="submit">
+                     <span v-if="isLoading" class="size-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                     <span v-else>إنشاء حساب</span>
                 </button>
             </form>
             <div class="mt-8 text-center">
@@ -115,9 +124,7 @@
             </div>
         </div>
     </main>
-    <footer class="px-6 py-8 text-center text-xs text-text-muted lg:px-12">
-        © 2024 Smart Learn - المنصة التعليمية الموحدة. جميع الحقوق محفوظة.
-    </footer>
+    <AuthFooter />
 </div>
 </div>
 </template>
@@ -125,10 +132,13 @@
 <script setup>
 import { reactive, ref } from 'vue'
 
+import AuthFooter from '@/components/common/AuthFooter.vue'
+import AuthNavbar from '@/components/common/AuthNavbar.vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
 const showPassword = ref(false)
+const isLoading = ref(false)
 const form = reactive({
 role: 'student',
 fullName: '',
@@ -138,8 +148,48 @@ password: '',
 agreeTerms: false
 })
 
+const toast = reactive({
+    show: false,
+    title: '',
+    message: '',
+    type: 'success'
+});
+
+const showToast = (title, message, type = 'success') => {
+    toast.title = title;
+    toast.message = message;
+    toast.type = type;
+    toast.show = true;
+    setTimeout(() => {
+        toast.show = false;
+    }, 3000);
+};
+
 const handleRegister = () => {
-console.log('Register attempt:', form)
-router.push('/student/dashboard')
+    isLoading.value = true;
+    setTimeout(() => {
+        isLoading.value = false;
+        showToast('إنشاء الحساب', 'تم إنشاء حسابك بنجاح، أهلاً بك!');
+        setTimeout(() => {
+            if (form.role === 'instructor') {
+                router.push('/instructor/dashboard')
+            } else {
+                router.push('/student/dashboard')
+            }
+        }, 1500);
+    }, 2000);
 }
 </script>
+
+<style scoped>
+.toast-enter-active,
+.toast-leave-active {
+    transition: all 0.3s ease;
+}
+
+.toast-enter-from,
+.toast-leave-to {
+    opacity: 0;
+    transform: translate(-50%, 20px);
+}
+</style>

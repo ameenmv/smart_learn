@@ -60,7 +60,7 @@
           <h1 class="text-3xl md:text-4xl font-black mb-3">أهلاً بك د. محمد</h1>
           <p class="text-blue-100 text-lg max-w-lg leading-relaxed">نتمنى لك يوماً دراسياً ملهماً. لديك 3 محاضرات اليوم و 12 واجباً جديداً بانتظار تصحيحك.</p>
           <div class="mt-8 flex flex-wrap gap-4">
-            <button class="bg-white text-primary px-6 py-3 rounded-xl font-black text-sm hover:bg-blue-50 transition-all cursor-pointer">إضافة محتوى جديد</button>
+            <RouterLink to="/instructor/lectures" class="bg-white text-primary px-6 py-3 rounded-xl font-black text-sm hover:bg-blue-50 transition-all cursor-pointer inline-block">إضافة محتوى جديد</RouterLink>
             <button class="bg-white/20 backdrop-blur-md text-white px-6 py-3 rounded-xl font-bold text-sm hover:bg-white/30 transition-all border border-white/30 cursor-pointer">سجل الغياب اليومي</button>
           </div>
         </div>

@@ -2,12 +2,7 @@
   <div class="flex flex-col min-h-screen bg-bg-base text-text-main transition-colors duration-300">
     <!-- Header -->
     <header class="sticky top-0 z-10 bg-bg-surface/80 backdrop-blur-md border-b border-border-base px-8 h-16 flex items-center justify-between transition-colors duration-300">
-      <div class="flex items-center gap-3">
-        <span class="text-xl font-black text-text-main font-sans order-1">Smart Learn</span>
-        <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center order-2">
-          <span class="material-symbols-outlined text-white text-xl" style="font-variation-settings: 'FILL' 1;">school</span>
-        </div>
-      </div>
+      
       <div class="flex items-center gap-3">
         <button class="px-5 py-2 rounded-lg border border-border-base font-bold text-sm hover:bg-bg-base transition-colors cursor-pointer text-text-main">
           حفظ كمسودة
@@ -22,7 +17,7 @@
       <!-- Main Content -->
       <div class="p-8 max-w-[900px] mx-auto ml-[320px] w-full transition-all duration-300">
         <nav class="flex items-center gap-2 text-sm text-text-muted mb-4">
-          <a class="hover:text-primary transition-colors cursor-pointer" href="#">إدارة الدورات</a>
+          <RouterLink to="/instructor/courses" class="hover:text-primary transition-colors cursor-pointer">إدارة الدورات</RouterLink>
           <span class="material-symbols-outlined text-xs">chevron_left</span>
           <a class="hover:text-primary transition-colors cursor-pointer" href="#">الذكاء الاصطناعي</a>
           <span class="material-symbols-outlined text-xs">chevron_left</span>
@@ -72,7 +67,8 @@
 
           <div class="bg-bg-surface p-6 rounded-2xl border border-border-base shadow-sm transition-colors duration-300">
             <label class="block text-sm font-bold mb-4 text-text-main">المواد المرفقة (PDF / PowerPoint)</label>
-            <div class="border-2 border-dashed border-border-base rounded-2xl p-10 flex flex-col items-center justify-center bg-bg-base/50 hover:border-primary/50 hover:bg-primary/5 transition-all cursor-pointer group">
+            <div @click="triggerFileUpload" class="border-2 border-dashed border-border-base rounded-2xl p-10 flex flex-col items-center justify-center bg-bg-base/50 hover:border-primary/50 hover:bg-primary/5 transition-all cursor-pointer group">
+              <input type="file" ref="fileInput" hidden @change="handleFileUpload" />
               <div class="size-16 rounded-full bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                 <span class="material-symbols-outlined text-primary text-3xl">cloud_upload</span>
               </div>
@@ -146,8 +142,22 @@
 </template>
 
 <script setup>
+import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+
 const router = useRouter();
+const fileInput = ref(null);
+
+const triggerFileUpload = () => {
+  fileInput.value.click();
+};
+
+const handleFileUpload = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    console.log('File selected:', file.name);
+  }
+};
 </script>
 
 <style scoped>

@@ -10,15 +10,15 @@
       </div>
 
       <!-- User Profile Summary -->
-      <div class="flex items-center gap-3 px-2">
-        <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12 border-2 border-primary/20" 
+      <RouterLink to="/student/profile" class="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-bg-surface-hover transition-colors cursor-pointer group">
+        <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12 border-2 border-primary/20 group-hover:border-primary transition-colors" 
              aria-label="صورة الملف الشخصي"
              style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAvRrl-zLbMRME5_ZXm21NvDaOOyhhvHKSCYsKOJy-QqgMBibTlKedN0jo3iHQeFzCBU3DR9BuPTpkmdDki4zRSFsD9xaHTFfZnrznnHqlXBXFXGkFARsPgJWdt0nzr6R_RExEkaisv-0oSFF64VIObuVEfYfrW-lJHboFVx2rmc77K5uimZGtxhCHh42ED4jIzvRwmKv6R_FgczAcRorZuB_ZQP_1dZiwdXeCWK4iNhl7wqiDQS-kN-g73lrRjAOd_7usnj27t3AQg");'></div>
         <div class="flex flex-col">
-          <h1 class="text-text-main text-base font-bold leading-normal">أحمد محمد</h1>
+          <h1 class="text-text-main text-base font-bold leading-normal group-hover:text-primary transition-colors">أحمد محمد</h1>
           <p class="text-text-muted text-xs font-normal leading-normal">طالب هندسة برمجيات</p>
         </div>
-      </div>
+      </RouterLink>
 
       <!-- Navigation -->
       <nav class="flex flex-col gap-1">
