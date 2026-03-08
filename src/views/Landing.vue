@@ -38,7 +38,7 @@
             <div class="flex flex-col gap-4">
               <span class="text-primary font-bold text-sm tracking-widest uppercase bg-primary/10 w-fit px-3 py-1 rounded-full animate-fade-in">المستقبل يبدأ هنا</span>
               <h1 class="text-text-main text-4xl lg:text-6xl font-black leading-[1.15] tracking-tight">
-                نظام التعليم الذكي المتكامل للجامعات الحديثة
+                نظام التعليم الذكي المتكامل للجامعات 
               </h1>
               <p class="text-text-muted text-lg lg:text-xl font-normal leading-relaxed max-w-[600px]">
                 تمكين الجامعات والطلاب بأحدث تقنيات التعليم والذكاء الاصطناعي لتجربة أكاديمية متطورة تلبي معايير الجودة العالمية عبر منصة Smart Learn.

@@ -1,3 +1,4 @@
+import { useAuthStore } from '@/stores/auth'
 import { createRouter, createWebHistory } from 'vue-router'
 import Landing from '../views/Landing.vue'
 import Login from '../views/Login.vue'
@@ -14,6 +15,7 @@ const router = createRouter({
     {
       path: '/student',
       component: () => import('../layouts/StudentLayout.vue'),
+      meta: { requiresAuth: true },
       children: [
         {
           path: 'dashboard',
@@ -69,6 +71,7 @@ const router = createRouter({
     {
       path: '/instructor',
       component: () => import('../layouts/InstructorLayout.vue'),
+      meta: { requiresAuth: true },
       children: [
         {
           path: 'dashboard',
@@ -148,6 +151,7 @@ const router = createRouter({
     {
       path: '/student/quiz/:id',
       name: 'student-quiz',
+      meta: { requiresAuth: true },
       component: () => import('../views/student/Quiz.vue')
     },
     {
@@ -157,14 +161,33 @@ const router = createRouter({
     {
       path: '/login',
       name: 'login',
-      component: Login
+      component: Login,
+      meta: { guestOnly: true }
     },
     {
       path: '/register',
       name: 'register',
-      component: Register
+      component: Register,
+      meta: { guestOnly: true }
     }
   ]
 })
 
+// ── Navigation Guard ──────────────────────────────────────────────
+router.beforeEach((to) => {
+  const authStore = useAuthStore()
+
+  // Protected routes: redirect to login if not authenticated
+  if (to.matched.some(record => record.meta.requiresAuth) && !authStore.isAuthenticated) {
+    return { name: 'login', query: { redirect: to.fullPath } }
+  }
+
+  // Guest-only routes (login/register): redirect to dashboard if already logged in
+  if (to.matched.some(record => record.meta.guestOnly) && authStore.isAuthenticated) {
+    const role = authStore.userRole
+    return role === 'instructor' ? '/instructor/dashboard' : '/student/dashboard'
+  }
+})
+
 export default router
+

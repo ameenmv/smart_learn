@@ -44,14 +44,14 @@
           <span class="material-symbols-outlined text-sm">quiz</span>
           الاختبارات
         </button>
-        <button 
+        <!-- <button 
           @click="activeTab = 'assignments'" 
           class="px-8 py-4 font-bold flex items-center gap-2 whitespace-nowrap cursor-pointer hover:bg-bg-surface-hover transition-colors"
           :class="activeTab === 'assignments' ? 'text-primary border-b-2 border-primary' : 'text-text-muted hover:text-primary'"
         >
           <span class="material-symbols-outlined text-sm">assignment</span>
           الواجبات
-        </button>
+        </button> -->
       </div>
     </div>
 
