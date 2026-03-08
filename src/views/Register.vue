@@ -81,7 +81,8 @@
                             <label
                                 class="flex h-full flex-1 cursor-pointer items-center justify-center rounded-lg transition-all duration-200 has-[:checked]:bg-bg-surface has-[:checked]:text-primary has-[:checked]:shadow-sm text-text-muted">
                                 <span class="text-sm font-bold">طالب جامعي</span>
-                                <input v-model="form.role" class="hidden" name="role" type="radio" value="student" />
+                                <input v-model="form.role" class="hidden" name="role" type="radio"
+                                    value="university_student" />
                             </label>
                             <label
                                 class="flex h-full flex-1 cursor-pointer items-center justify-center rounded-lg transition-all duration-200 has-[:checked]:bg-bg-surface has-[:checked]:text-primary has-[:checked]:shadow-sm text-text-muted">
@@ -118,8 +119,8 @@
                             <span v-if="getError('email')" class="text-xs text-red-500 mt-1 block">{{ getError('email')
                                 }}</span>
                         </div>
-                        <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
-                            <div class="space-y-2">
+                        <div :class="form.role === 'university_student' ? 'grid grid-cols-1 gap-5 md:grid-cols-2' : ''">
+                            <div class="space-y-2" v-if="form.role === 'university_student'">
                                 <label class="text-sm font-semibold text-text-main">الرقم الجامعي</label>
                                 <div class="relative">
                                     <span
@@ -231,13 +232,20 @@ const handleRegister = async () => {
     // ── API call ────────────────────────────────────────────────────
     isLoading.value = true
     try {
-        await authStore.register({
+        // Map 'university_student' → 'student' for the API
+        const apiRole = form.role === 'university_student' ? 'student' : form.role
+        const payload = {
             name: form.fullName.trim(),
             email: form.email.trim(),
             password: form.password,
-            role: form.role,
-            university_id: form.studentId.trim(),
-        })
+            role: apiRole,
+        }
+        // Only send university_id if university student
+        if (form.role === 'university_student' && form.studentId.trim()) {
+            payload.university_id = form.studentId.trim()
+        }
+
+        await authStore.register(payload)
 
         console.log('[Register] isAuthenticated:', authStore.isAuthenticated)
         console.log('[Register] token in localStorage:', localStorage.getItem('auth_token'))
