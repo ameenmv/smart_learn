@@ -179,7 +179,7 @@
           </div>
         </div>
         <div class="pt-8 border-t border-border-base flex flex-col md:flex-row justify-between items-center gap-4">
-          <p class="text-text-muted text-sm">© 2024 Smart Learn. جميع الحقوق محفوظة.</p>
+          <p class="text-text-muted text-sm">© 2026 Smart Learn. جميع الحقوق محفوظة.</p>
           <div class="flex gap-6">
             <a class="text-text-muted text-xs hover:text-primary" href="#">الشروط والأحكام</a>
             <a class="text-text-muted text-xs hover:text-primary" href="#">سياسة الكوكيز</a>

@@ -215,7 +215,7 @@
       </section>
     </main>
     <footer class="mt-10 px-10 py-6 text-center border-t border-border-base">
-      <p class="text-sm text-text-muted">© 2024 Smart Learn. جميع الحقوق محفوظة.</p>
+      <p class="text-sm text-text-muted">© 2026 Smart Learn. جميع الحقوق محفوظة.</p>
     </footer>
   </div>
 </template>

@@ -270,7 +270,7 @@
     </div>
     
     <footer class="mt-auto py-6 px-8 text-center text-text-muted text-xs border-t border-border-base shrink-0">
-      © 2024 منصة التعلم الذكي - جامعة التقنية العربية. جميع الحقوق محفوظة.
+      © 2026 منصة التعلم الذكي - جامعة التقنية العربية. جميع الحقوق محفوظة.
     </footer>
   </div>
 </template>
