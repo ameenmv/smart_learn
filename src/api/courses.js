@@ -102,4 +102,58 @@ export const coursesApi = {
   publishQuiz(quizId) {
     return apiClient.post(`/quizzes/${quizId}/publish`)
   },
+
+  // ── Assignments ─────────────────────────────────────────────────────
+
+  /**
+   * Create assignment under a lecture.
+   * POST /api/lectures/{lectureId}/assignments
+   */
+  createAssignment(lectureId, payload) {
+    return apiClient.post(`/lectures/${lectureId}/assignments`, payload)
+  },
+
+  /**
+   * Get assignment submissions.
+   * GET /api/assignment/{assignmentId}/submissions
+   */
+  getAssignmentSubmissions(assignmentId) {
+    return apiClient.get(`/assignment/${assignmentId}/submissions`)
+  },
+
+  /**
+   * Grade a submission.
+   * POST /api/submission/{submissionId}/grade
+   */
+  gradeSubmission(submissionId, payload) {
+    return apiClient.post(`/submission/${submissionId}/grade`, payload)
+  },
+
+  // ── Students ────────────────────────────────────────────────────────
+
+  /**
+   * Get students in a course.
+   * GET /api/instructor/courses/{courseId}/students
+   */
+  getCourseStudents(courseId) {
+    return apiClient.get(`/instructor/courses/${courseId}/students`)
+  },
+
+  /**
+   * Update enrollment status (approve/reject).
+   * PATCH /api/courses/{courseId}/students/{studentId}/status
+   */
+  updateEnrollmentStatus(courseId, studentId, payload) {
+    return apiClient.patch(`/courses/${courseId}/students/${studentId}/status`, payload)
+  },
+
+  // ── Certificates ────────────────────────────────────────────────────
+
+  /**
+   * Issue certificate for a student.
+   * POST /api/student/{courseId}/certificate
+   */
+  issueCertificate(courseId) {
+    return apiClient.post(`/student/${courseId}/certificate`)
+  },
 }
