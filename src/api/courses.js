@@ -78,4 +78,28 @@ export const coursesApi = {
   deleteCourse(id) {
     return apiClient.delete(`/courses/${id}`)
   },
+
+  /**
+   * Create a quiz under a course.
+   * POST /api/courses/{courseId}/quizzes
+   */
+  createQuiz(courseId, payload) {
+    return apiClient.post(`/courses/${courseId}/quizzes`, payload)
+  },
+
+  /**
+   * Add a question to a quiz.
+   * POST /api/quizzes/{quizId}/questions
+   */
+  addQuizQuestion(quizId, payload) {
+    return apiClient.post(`/quizzes/${quizId}/questions`, payload)
+  },
+
+  /**
+   * Publish a quiz.
+   * POST /api/quizzes/{quizId}/publish
+   */
+  publishQuiz(quizId) {
+    return apiClient.post(`/quizzes/${quizId}/publish`)
+  },
 }
