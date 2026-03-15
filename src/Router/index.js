@@ -95,6 +95,7 @@ const router = createRouter({
           component: () => import('../views/instructor/EditCourse.vue'),
           meta: { hideNavbar: true, fullWidth: true }
         },
+
         {
           path: 'lectures/upload',
           name: 'instructor-upload-lecture',
