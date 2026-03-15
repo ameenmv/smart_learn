@@ -110,10 +110,11 @@
               </td>
               <td class="px-6 py-4">
                 <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button class="p-2 hover:bg-primary/10 rounded-lg text-primary transition-colors cursor-pointer"
+                  <RouterLink :to="`/instructor/courses/${course.id}/edit`"
+                    class="p-2 hover:bg-primary/10 rounded-lg text-primary transition-colors cursor-pointer"
                     title="تعديل">
                     <span class="material-symbols-outlined">edit</span>
-                  </button>
+                  </RouterLink>
                   <button @click="deleteCourse(course.id)"
                     class="p-2 hover:bg-red-500/10 rounded-lg text-red-500 transition-colors cursor-pointer"
                     title="حذف">

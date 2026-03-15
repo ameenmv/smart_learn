@@ -90,6 +90,12 @@ const router = createRouter({
           meta: { hideNavbar: true, fullWidth: true }
         },
         {
+          path: 'courses/:id/edit',
+          name: 'instructor-edit-course',
+          component: () => import('../views/instructor/EditCourse.vue'),
+          meta: { hideNavbar: true, fullWidth: true }
+        },
+        {
           path: 'lectures/upload',
           name: 'instructor-upload-lecture',
           component: () => import('../views/instructor/UploadLecture.vue'),

@@ -22,6 +22,25 @@ export const coursesApi = {
   },
 
   /**
+   * Get course details.
+   * GET /api/courses/{id}
+   * @param {number} id
+   */
+  getCourse(id) {
+    return apiClient.get(`/courses/${id}`)
+  },
+
+  /**
+   * Update a course.
+   * PUT /api/courses/{id}
+   * @param {number} id
+   * @param {{ title: string, description: string, level: string, code: string, status: string }} payload
+   */
+  updateCourse(id, payload) {
+    return apiClient.put(`/courses/${id}`, payload)
+  },
+
+  /**
    * Delete a course.
    * DELETE /api/courses/{id}
    * @param {number} id
