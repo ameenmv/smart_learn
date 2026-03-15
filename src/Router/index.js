@@ -84,6 +84,12 @@ const router = createRouter({
           component: () => import('../views/instructor/Courses.vue')
         },
         {
+          path: 'courses/create',
+          name: 'instructor-create-course',
+          component: () => import('../views/instructor/CreateCourse.vue'),
+          meta: { hideNavbar: true, fullWidth: true }
+        },
+        {
           path: 'lectures/upload',
           name: 'instructor-upload-lecture',
           component: () => import('../views/instructor/UploadLecture.vue'),
