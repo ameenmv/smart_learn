@@ -131,16 +131,52 @@
         <p class="text-sm text-text-muted">عرض {{ courses.length }} دورة</p>
       </div>
     </div>
+
+    <!-- Confirm Delete Dialog -->
+    <ConfirmDialog :visible="showDeleteDialog" title="حذف الدورة"
+      message="هل أنت متأكد من حذف هذه الدورة؟ لا يمكن التراجع عن هذا الإجراء." confirmText="حذف الدورة"
+      cancelText="إلغاء" variant="danger" :loading="isDeleting" @confirm="confirmDelete"
+      @cancel="showDeleteDialog = false" />
+
+    <!-- Toast -->
+    <Transition name="toast">
+      <div v-if="toast.show"
+        class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 px-6 py-4 rounded-xl shadow-xl border backdrop-blur-md transition-all duration-300 min-w-[320px] cursor-pointer hover:scale-[1.02]"
+        :class="toast.type === 'success' ? 'bg-emerald-50/90 border-emerald-200 dark:bg-emerald-900/90 dark:border-emerald-800' : 'bg-red-50/90 border-red-200 dark:bg-red-900/90 dark:border-red-800'"
+        @click="hideToast">
+        <div class="p-2 rounded-full"
+          :class="toast.type === 'success' ? 'bg-emerald-100 dark:bg-emerald-800 text-emerald-600 dark:text-emerald-200' : 'bg-red-100 dark:bg-red-800 text-red-600 dark:text-red-200'">
+          <span class="material-symbols-outlined text-xl">{{ toast.type === 'success' ? 'check_circle' : 'error'
+            }}</span>
+        </div>
+        <div class="flex flex-col flex-1">
+          <h4 class="font-bold text-sm"
+            :class="toast.type === 'success' ? 'text-emerald-900 dark:text-emerald-100' : 'text-red-900 dark:text-red-100'">
+            {{ toast.title }}</h4>
+          <p class="text-xs opacity-90"
+            :class="toast.type === 'success' ? 'text-emerald-800 dark:text-emerald-200' : 'text-red-800 dark:text-red-200'">
+            {{ toast.message }}</p>
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
 
 <script setup>
 import { coursesApi } from '@/api/courses'
+import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
+import { useToast } from '@/composables/useToast'
 import { computed, onMounted, ref } from 'vue'
+
+const { toast, showToast, hideToast } = useToast()
 
 const courses = ref([])
 const isLoading = ref(false)
 const errorMsg = ref('')
+
+const showDeleteDialog = ref(false)
+const isDeleting = ref(false)
+const deleteTargetId = ref(null)
 
 const activeCourses = computed(() => courses.value.filter(c => c.status === 'active').length)
 const draftCourses = computed(() => courses.value.filter(c => c.status === 'draft').length)
@@ -164,13 +200,22 @@ onMounted(fetchCourses)
 
 // ── Delete Course ───────────────────────────────────────────────────
 
-async function deleteCourse(id) {
-  if (!confirm('هل أنت متأكد من حذف هذه الدورة؟')) return
+function deleteCourse(id) {
+  deleteTargetId.value = id
+  showDeleteDialog.value = true
+}
+
+async function confirmDelete() {
+  isDeleting.value = true
   try {
-    await coursesApi.deleteCourse(id)
-    courses.value = courses.value.filter(c => c.id !== id)
+    await coursesApi.deleteCourse(deleteTargetId.value)
+    courses.value = courses.value.filter(c => c.id !== deleteTargetId.value)
+    showDeleteDialog.value = false
+    showToast('تم الحذف', 'تم حذف الدورة بنجاح', 'success')
   } catch (e) {
-    alert(e.response?.data?.message || 'حدث خطأ أثناء الحذف')
+    showToast('خطأ', e.response?.data?.message || 'حدث خطأ أثناء الحذف', 'error')
+  } finally {
+    isDeleting.value = false
   }
 }
 
@@ -209,3 +254,16 @@ function formatDate(dateStr) {
   return d.toLocaleDateString('ar-EG', { year: 'numeric', month: 'short', day: 'numeric' })
 }
 </script>
+
+<style scoped>
+.toast-enter-active,
+.toast-leave-active {
+  transition: all 0.3s ease;
+}
+
+.toast-enter-from,
+.toast-leave-to {
+  opacity: 0;
+  transform: translate(-50%, 20px);
+}
+</style>
