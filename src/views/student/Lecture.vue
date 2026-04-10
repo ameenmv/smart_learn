@@ -209,9 +209,19 @@
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue';
+import { studentApi } from '@/api/student';
+import { onMounted, reactive, ref } from 'vue';
+import { useRoute } from 'vue-router';
 
+const route = useRoute();
+const courseId = route.params.courseId;
+const lectureId = route.params.lectureId;
+
+const lecture = ref(null);
+const isLoading = ref(true);
 const isCompleting = ref(false);
+const noteContent = ref('');
+const isSavingNote = ref(false);
 
 const toast = reactive({
     show: false,
@@ -230,13 +240,46 @@ const showToast = (title, message, type = 'success') => {
     }, 3000);
 };
 
+const fetchLecture = async () => {
+    isLoading.value = true;
+    try {
+        const { data } = await studentApi.getLecture(courseId, lectureId);
+        lecture.value = data.data || data;
+    } catch (error) {
+        console.error('[Lecture] Failed to load:', error);
+        showToast('خطأ', 'فشل تحميل بيانات المحاضرة', 'error');
+    } finally {
+        isLoading.value = false;
+    }
+};
+
 const markComplete = () => {
     isCompleting.value = true;
+    // No dedicated API endpoint for mark-complete yet
     setTimeout(() => {
         isCompleting.value = false;
         showToast('أحسنت!', 'تم تحديد المحاضرة كمكتملة');
     }, 1000);
 };
+
+const saveNote = async () => {
+    if (!noteContent.value.trim()) return;
+    isSavingNote.value = true;
+    try {
+        await studentApi.addLectureNote(lectureId, { content: noteContent.value.trim() });
+        showToast('تم الحفظ', 'تم حفظ الملاحظة بنجاح');
+        noteContent.value = '';
+    } catch (error) {
+        console.error('[Lecture] Save note failed:', error);
+        showToast('خطأ', 'فشل حفظ الملاحظة', 'error');
+    } finally {
+        isSavingNote.value = false;
+    }
+};
+
+onMounted(() => {
+    fetchLecture();
+});
 </script>
 
 <style scoped>

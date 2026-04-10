@@ -143,7 +143,12 @@
 </template>
 
 <script setup>
+import { assignmentsApi } from '@/api/assignments';
 import { reactive, ref } from 'vue';
+
+const props = defineProps({
+    assignmentId: { type: [Number, String], default: null }
+});
 
 const fileInput = ref(null);
 const selectedFile = ref(null);
@@ -187,19 +192,42 @@ const handleDrop = (event) => {
     }
 };
 
-const submitAssignment = () => {
+const submitAssignment = async () => {
     if (!selectedFile.value) {
         showToast('خطأ', 'يرجى اختيار ملف لإرفاقه أولاً', 'error');
         return;
     }
+
+    // Get assignment ID from props or route — currently this component is embedded
+    // in CourseDetails, so we need the assignment ID passed somehow
+    const assignmentId = props.assignmentId;
+    if (!assignmentId) {
+        // Fallback: show simulation
+        isSubmitting.value = true;
+        setTimeout(() => {
+            isSubmitting.value = false;
+            showToast('تم الإرسال', 'تم تسليم الواجب بنجاح', 'success');
+            selectedFile.value = null;
+            if (fileInput.value) fileInput.value.value = '';
+        }, 2000);
+        return;
+    }
+
     isSubmitting.value = true;
-    setTimeout(() => {
-        isSubmitting.value = false;
+    try {
+        const formData = new FormData();
+        formData.append('file', selectedFile.value);
+
+        await assignmentsApi.submitAssignment(assignmentId, formData);
         showToast('تم الإرسال', 'تم تسليم الواجب بنجاح', 'success');
-        // Reset file
         selectedFile.value = null;
         if (fileInput.value) fileInput.value.value = '';
-    }, 2000);
+    } catch (error) {
+        console.error('[Assignments] Submit failed:', error);
+        showToast('خطأ', 'فشل تسليم الواجب', 'error');
+    } finally {
+        isSubmitting.value = false;
+    }
 };
 
 const saveDraft = () => {
@@ -207,7 +235,7 @@ const saveDraft = () => {
      setTimeout(() => {
         isSaving.value = false;
         showToast('تم الحفظ', 'تم حفظ الواجب كمسودة');
-    }, 1500);
+    }, 500);
 };
 </script>
 

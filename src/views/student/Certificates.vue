@@ -137,13 +137,11 @@
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue';
+import { certificatesApi } from '@/api/certificates';
+import { onMounted, reactive, ref } from 'vue';
 
-const certificates = ref([
-  { id: 'CRT-2023-001', course: 'أساسيات هندسة البرمجيات', date: '15/10/2023' },
-  { id: 'CRT-2023-002', course: 'مقدمة في الذكاء الاصطناعي', date: '20/09/2023' },
-  { id: 'CRT-2023-003', course: 'تصميم واجهات المستخدم UI/UX', date: '05/08/2023' },
-]);
+const certificates = ref([]);
+const isLoading = ref(true);
 
 const toast = reactive({
     show: false,
@@ -162,14 +160,36 @@ const showToast = (title, message, type = 'success') => {
     }, 3000);
 };
 
+const fetchCertificates = async () => {
+    isLoading.value = true;
+    try {
+        const { data } = await certificatesApi.getMyCertificates();
+        certificates.value = data.data || data || [];
+    } catch (error) {
+        console.error('[Certificates] Failed to load:', error);
+        certificates.value = [];
+    } finally {
+        isLoading.value = false;
+    }
+};
+
 const downloadCertificate = (cert) => {
-    showToast('جاري التحميل', `تم بدء تحميل شهادة "${cert.course}"...`);
+    if (cert.download_url || cert.template) {
+        window.open(cert.download_url || cert.template, '_blank');
+    } else {
+        showToast('جاري التحميل', `تم بدء تحميل شهادة "${cert.course || cert.title}"...`);
+    }
 };
 
 const shareCertificate = (cert) => {
-    navigator.clipboard.writeText(`https://smart-learn.com/verify/${cert.id}`);
+    const url = cert.verify_url || `https://smart-learn.com/verify/${cert.id}`;
+    navigator.clipboard.writeText(url);
     showToast('تم النسخ', 'تم نسخ رابط التحقق من الشهادة');
 };
+
+onMounted(() => {
+    fetchCertificates();
+});
 </script>
 
 <style scoped>

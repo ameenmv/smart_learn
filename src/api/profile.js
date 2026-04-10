@@ -30,7 +30,7 @@ export const profileApi = {
   /**
    * Change password.
    * PUT /api/change-password
-   * @param {{ current_password: string, password: string, password_confirmation: string }} payload
+   * @param {{ current_password: string, new_password: string, new_password_confirmation: string }} payload
    */
   changePassword(payload) {
     return apiClient.put('/change-password', payload)

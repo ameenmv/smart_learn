@@ -35,4 +35,28 @@ export const authApi = {
   getUser() {
     return apiClient.get('/auth/user')
   },
+
+  /**
+   * Send a password-reset OTP to the user's email.
+   * @param {{ email: string }} payload
+   */
+  forgetPassword(payload) {
+    return apiClient.post('/auth/forget-password', payload)
+  },
+
+  /**
+   * Verify the OTP sent to the user's email.
+   * @param {{ email: string, otp: string }} payload
+   */
+  verifyOtp(payload) {
+    return apiClient.post('/auth/verify-otp', payload)
+  },
+
+  /**
+   * Reset the user's password after OTP verification.
+   * @param {{ email: string, password: string, password_confirmation: string }} payload
+   */
+  resetPassword(payload) {
+    return apiClient.post('/auth/reset-password', payload)
+  },
 }

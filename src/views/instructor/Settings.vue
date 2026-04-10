@@ -415,8 +415,8 @@ const updatePassword = async () => {
     try {
         await profileApi.changePassword({
             current_password: passwords.current,
-            password: passwords.new,
-            password_confirmation: passwords.confirm,
+            new_password: passwords.new,
+            new_password_confirmation: passwords.confirm,
         })
         showToast('تم التحديث', 'تم تحديث كلمة المرور بنجاح')
         passwords.current = ''

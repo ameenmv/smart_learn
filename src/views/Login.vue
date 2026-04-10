@@ -117,8 +117,8 @@
                         </div>
                         <div>
                             <div class="flex justify-between mb-2">
-                                <a class="text-xs font-semibold text-primary hover:underline" href="#">نسيت كلمة
-                                    المرور؟</a>
+                                <RouterLink class="text-xs font-semibold text-primary hover:underline" to="/forgot-password">نسيت كلمة
+                                    المرور؟</RouterLink>
                                 <label class="block text-sm font-bold text-text-main" for="password">كلمة المرور</label>
                             </div>
                             <div class="relative">

@@ -217,52 +217,18 @@
 </template>
 
 <script setup>
-import { nextTick, ref } from 'vue';
+import { chatApi } from '@/api/chat';
+import { nextTick, onMounted, ref } from 'vue';
 
 const messagesContainer = ref(null);
 const fileInput = ref(null);
 const imageInput = ref(null);
 const newMessage = ref('');
 const isTyping = ref(false);
+const conversationId = ref(null);
+const conversations = ref([]);
 
-const messages = ref([
-  {
-    id: 1,
-    sender: 'user',
-    time: '10:42 ص',
-    type: 'text',
-    text: 'مرحباً، هل يمكنك مساعدتي في فهم الفصل الثالث من مادة التفاضل والتكامل؟ أواجه صعوبة في مفهوم "المشتقات المتتابعة".'
-  },
-  {
-    id: 2,
-    sender: 'ai',
-    time: '10:43 ص',
-    type: 'ai',
-    text: 'أهلاً بك! بالتأكيد، المشتقات المتتابعة (أو المشتقات ذات الرتب العليا) هي ببساطة عملية اشتقاق الدالة أكثر من مرة. إذا كانت لديك دالة f(x)، فالمشتقة الأولى هي f\'(x)، والمشتقة الثانية هي اشتقاق الناتج مرة أخرى.<br><br>إليك بعض المصادر الموصى بها من منهجك الدراسي:',
-    cards: [
-      {
-        icon: 'picture_as_pdf',
-        iconBg: 'bg-red-100 text-red-600',
-        title: 'ملخص الفصل الثالث - التفاضل',
-        subtitle: 'PDF • 2.4 MB',
-        actionIcon: 'download'
-      },
-      {
-        icon: 'play_circle',
-        iconBg: 'bg-blue-100 text-primary',
-        title: 'فيديو شرح المشتقات المتتابعة',
-        subtitle: 'محاضرة مسجلة • 15 دقيقة',
-        actionIcon: 'open_in_new'
-      }
-    ],
-    actionCard: {
-      title: 'اختبار تقييم سريع',
-      desc: 'هل تود إجراء اختبار قصير مكون من 5 أسئلة لتقييم فهمك للمشتقات المتتابعة؟',
-      buttonText: 'ابدأ الاختبار الآن',
-      image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDMXoZybMH7hWm2CrDx5k25jjTvtSDKM9fGCQrtXNrnHO5bifNDe7YK720MVw8VlF535Cx2eyCBLdyovdIxc68CRq2zBqaZot-XxGoZEWcr4SRlmjDppxHEi5qY-NbKonDcmMzdcvouB4xNn8KWT1x_NZokLvkFD2GnwLW3Nz7QelKdcdyY-DzpijwQRPo7tTHkWVfRt6Qc1KXXA3ZDCr78Dopsc5NRc_cRV2q2Xb3tDjYxAADjxi63kf7DqJd6Zch3QyLBApZuM19d'
-    }
-  }
-]);
+const messages = ref([]);
 
 const scrollToBottom = () => {
   nextTick(() => {
@@ -272,12 +238,74 @@ const scrollToBottom = () => {
   });
 };
 
-const sendMessage = () => {
+const loadConversations = async () => {
+  try {
+    const { data } = await chatApi.getConversations();
+    conversations.value = data.data || data || [];
+
+    // Auto-load last conversation if exists
+    if (conversations.value.length > 0) {
+      const lastConv = conversations.value[0];
+      conversationId.value = lastConv.id;
+      await loadMessages(lastConv.id);
+    }
+  } catch (error) {
+    console.error('[AIAssistant] Failed to load conversations:', error);
+  }
+};
+
+const loadMessages = async (convId) => {
+  try {
+    const { data } = await chatApi.getMessages(convId);
+    const rawMessages = data.data || data || [];
+    messages.value = rawMessages.flatMap(m => {
+      const msgs = [];
+      if (m.message) {
+        msgs.push({
+          id: m.id + '-user',
+          text: m.message,
+          sender: 'user',
+          time: m.created_at ? new Date(m.created_at).toLocaleTimeString('ar-EG', { hour: 'numeric', minute: 'numeric' }) : '',
+          type: 'text'
+        });
+      }
+      if (m.response) {
+        msgs.push({
+          id: m.id + '-ai',
+          text: m.response,
+          sender: 'ai',
+          time: m.updated_at ? new Date(m.updated_at).toLocaleTimeString('ar-EG', { hour: 'numeric', minute: 'numeric' }) : '',
+          type: 'text'
+        });
+      }
+      return msgs;
+    });
+    scrollToBottom();
+  } catch (error) {
+    console.error('[AIAssistant] Failed to load messages:', error);
+  }
+};
+
+const startNewConversation = async () => {
+  try {
+    const { data } = await chatApi.startConversation();
+    const conv = data.data || data;
+    conversationId.value = conv.id;
+    messages.value = [];
+  } catch (error) {
+    console.error('[AIAssistant] Failed to start conversation:', error);
+  }
+};
+
+const sendMessage = async () => {
   if (!newMessage.value.trim()) return;
 
+  const userMsg = newMessage.value.trim();
+
+  // Show user message immediately
   messages.value.push({
     id: Date.now(),
-    text: newMessage.value,
+    text: userMsg,
     sender: 'user',
     time: new Date().toLocaleTimeString('ar-EG', { hour: 'numeric', minute: 'numeric' }),
     type: 'text'
@@ -286,19 +314,38 @@ const sendMessage = () => {
   newMessage.value = '';
   scrollToBottom();
 
-  // Simulate AI response
+  // Start new conversation if none
+  if (!conversationId.value) {
+    await startNewConversation();
+  }
+
+  // Send to API
   isTyping.value = true;
-  setTimeout(() => {
+  try {
+    const { data } = await chatApi.sendMessage(conversationId.value, { message: userMsg });
+    const response = data.data || data;
+
     isTyping.value = false;
     messages.value.push({
       id: Date.now() + 1,
-      text: 'شكراً لاستفسارك! سأقوم بمساعدتك في ذلك حالاً.',
+      text: response.response || response.reply || response.content || 'تم استلام رسالتك.',
       sender: 'ai',
       time: new Date().toLocaleTimeString('ar-EG', { hour: 'numeric', minute: 'numeric' }),
       type: 'text'
     });
     scrollToBottom();
-  }, 1500);
+  } catch (error) {
+    isTyping.value = false;
+    console.error('[AIAssistant] Send failed:', error);
+    messages.value.push({
+      id: Date.now() + 1,
+      text: 'عذراً، حدث خطأ. يرجى المحاولة مرة أخرى.',
+      sender: 'ai',
+      time: new Date().toLocaleTimeString('ar-EG', { hour: 'numeric', minute: 'numeric' }),
+      type: 'text'
+    });
+    scrollToBottom();
+  }
 };
 
 const triggerFileUpload = () => fileInput.value.click();
@@ -316,7 +363,6 @@ const handleFileUpload = (event) => {
       fileName: file.name
     });
     scrollToBottom();
-    // Reset input
     event.target.value = '';
   }
 };
@@ -336,8 +382,11 @@ const handleImageUpload = (event) => {
       scrollToBottom();
     };
     reader.readAsDataURL(file);
-    // Reset input
     event.target.value = '';
   }
 };
+
+onMounted(() => {
+  loadConversations();
+});
 </script>

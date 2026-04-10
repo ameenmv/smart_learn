@@ -5,6 +5,14 @@ import apiClient from './client'
  */
 export const coursesApi = {
   /**
+   * Get all courses (public, no auth required).
+   * GET /api/courses
+   */
+  getAllCourses() {
+    return apiClient.get('/courses')
+  },
+
+  /**
    * Create a new course.
    * POST /api/courses
    * @param {{ title: string, description: string, level: string, code: string, status: string }} payload

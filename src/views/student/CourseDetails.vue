@@ -372,10 +372,31 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { studentApi } from '@/api/student';
+import { onMounted, ref } from 'vue';
+import { useRoute } from 'vue-router';
 import Assignments from './Assignments.vue';
 
-const activeTab = ref('content')
+const route = useRoute();
+const activeTab = ref('content');
+const course = ref(null);
+const isLoading = ref(true);
+
+const fetchCourse = async () => {
+  isLoading.value = true;
+  try {
+    const { data } = await studentApi.getCourseDetails(route.params.id);
+    course.value = data.data || data;
+  } catch (error) {
+    console.error('[CourseDetails] Failed to load:', error);
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+onMounted(() => {
+  fetchCourse();
+});
 </script>
 
 <style scoped>

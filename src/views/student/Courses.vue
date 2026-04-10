@@ -84,7 +84,7 @@
     </div>
 
     <!-- View More -->
-    <div v-if="visibleCoursesCount < allCourses.length" class="mt-12 flex justify-center">
+    <div v-if="visibleCoursesCount < filteredCourses.length" class="mt-12 flex justify-center">
       <button @click="loadMore" class="flex items-center gap-2 px-8 py-3 bg-bg-surface border border-border-base rounded-xl text-primary font-bold shadow-sm hover:shadow-md transition-all cursor-pointer">
         عرض المزيد من المقررات
         <span class="material-symbols-outlined">expand_more</span>
@@ -94,74 +94,52 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
-import { RouterLink } from 'vue-router'
+import { studentApi } from '@/api/student'
+import { computed, onMounted, ref } from 'vue'
 
-const allCourses = [
-  {
-    title: 'برمجة الويب المتطورة (Full-stack)',
-    instructor: 'د. أحمد علي',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCcArXRI2h5Xrt7OX1N96oZkYHGD_e8Cz1Qg7k6Tz9ay3hYb_p2O-PY7yq3Lp6hwFfA-3HyTetiK5_877PM0EapF8p9DBfc_qD5T_sKB8co_6NalQiCvm1f07nsme3Vcm5I694JuxX_D3qrKy5D9jlmJcrlpeYees0GFXmKqYK0HbtUs9npalxj4bSJiy7HHlbh0srek0zvLQreBI07iojectPwoa3lk7iXFp9jopBtYlYYwiMZ7WcIsqSdg33ExJ6VtCfliB7JE5YU',
-    progress: 65,
-    progressPercent: '٦٥٪',
-    level: 'متوسط',
-    status: 'ongoing'
-  },
-  {
-    title: 'الذكاء الاصطناعي وتعلم الآلة',
-    instructor: 'د. سارة محمود',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDgtm6HgaQwdg4vYNnTwVZ57Ejrk9o8RZdI_wdf2dl0__UxHYlnCS0LF-c44X93_651yUKn1Lrm0tSZ2X_yS6cBEwrHLtMlJ70CEE0fc9QLZ4s3II-kftLw2OS2d56-vGAzgCq69ZINP9RKt6M7WhQFVGIz4VWD2h2ty4KJHDl4A5KoBARceUVtg4MP3GAeOSCurSGqGVu3N4P1hhYa9_hFMKHLVsMUyvd0QsmoAq57yn-8UP-lMcD1X5xeup1VlmQaQUIg8rO568M9',
-    progress: 0,
-    progressPercent: '٠٪',
-    level: 'متقدم',
-    status: 'pending'
-  },
-  {
-    title: 'أساسيات قواعد البيانات SQL',
-    instructor: 'د. محمد حسن',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBquV1MJoHnjVrIoKgaKCOZuA88m6J2qcG73A4PD5e_h_xx3MjNq30QXS9j_7xg7hrWo5AjwosbgrET_rsoFCQS4luXCzDljj_7sgCE3zzebZBW2F0ddI8vLEDVmJlOy3Vuc3NPwZaen_Wnvr4317d6VfX_jMcmGMvJQki8MAH0GNTcidsLDkXxKZGmr0SV7EE7CHq9hkRIWvfCnSwepyc7u-20WFymGU8jErNYTfzYWAwgv4w7N9u4gKjUOfgeNK3xr3iX521g9q5a',
-    progress: 90,
-    progressPercent: '٩٠٪',
-    level: 'مبتدئ',
-    status: 'ongoing'
-  },
-    {
-    title: 'تطوير تطبيقات الموبايل',
-    instructor: 'د. علي كمال',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuDaIreEq1PGo8L8e8tvb2fZirf4Ef8giO6fnApWFbJSU7O6sGQIIGTqQCVyIs4cAXZY8O4SKoIqVr7EqQIn-S7cir-j8FxgPicKqQJpM-yikFlfSnw0YpdGwvh6xMhztA51AiVroISWkUY3E8-yvQ2a-FXfT6D52zso0cKkibP1UB7NW9blEtB1gqm9wJply62n5hp-DMWWE0I3dubLoAHnrl2TGRsQ-rlSRudRj9mJ4vKrJw1W5YjLiV2Wt5ylf18mVk7taJdAa7EI',
-    progress: 30,
-    progressPercent: '٣٠٪',
-    level: 'متوسط',
-    status: 'ongoing'
-  },
-  {
-    title: 'تصميم تجربة المستخدم UX',
-    instructor: 'أ. ليلى سمير',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCWi3LTHZh0VcQNKStLo8HIqScqmUvW-uN2cH_RUMt4OTIsC2hb9wOJuDwxm1AyPgMOf0nsCcXrPDcsl7ei2H9i2kixgiWRmOyi0Ypy44GG6tHsmKS-AaIVvCdUXAY4AAJUOdtugR-FO40UalcOVZbwwR9xXA516GLNepq7iRgr12Rt6yxtnhX-WCvGycfaGft8BpIWwcTfYFKTCqH2RhVLi_b1AoXf80KK4kiB_UwbERULECoZRwGPbEcPu1g73gY7O0pO_XfzfJnH',
-    progress: 0,
-    progressPercent: '٠٪',
-    level: 'مبتدئ',
-    status: 'pending'
-  },
-  {
-    title: 'أمن المعلومات والشبكات',
-    instructor: 'د. عمر فاروق',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAXNnC5nDlDcUmyGn_0R0_szP7iRtyZ38MK_oYfxok3VyRVCWq0BX7yW4ivOtX5S3dMYnDya_7Stg0kYz2atZXkhUnj02YFtV8EDuIZm-5KAivD_mx3WEvSzfb0qEy7qNqyu0XEPwi4mSb8lph0EyMMtvn8vOAqZNr6eIbjYPEHhASFh_Yov7Jh4pNu3-6Xr9Im0gvOZ2il8ufWwgxKUwbBM0bvmbh-lTKGodG3XAejB3-qD_JAiMVIgcoEVxdiyxsoOQMwEMt4eoKq',
-    progress: 10,
-    progressPercent: '١٠٪',
-    level: 'متقدم',
-    status: 'ongoing'
-  }
-]
+const allCourses = ref([])
+const isLoading = ref(true)
+const searchQuery = ref('')
 
-const visibleCoursesCount = ref(3)
-const visibleCourses = computed(() => {
-    return allCourses.length // Just show length comparison logic in template, slicing in v-for is simpler if not using computed for array
+const filteredCourses = computed(() => {
+  if (!searchQuery.value.trim()) return allCourses.value
+  const q = searchQuery.value.trim().toLowerCase()
+  return allCourses.value.filter(c =>
+    (c.title || '').toLowerCase().includes(q) ||
+    (c.instructor_name || '').toLowerCase().includes(q)
+  )
 })
 
-const courses = computed(() => allCourses.slice(0, visibleCoursesCount.value))
+const visibleCoursesCount = ref(6)
+const courses = computed(() => filteredCourses.value.slice(0, visibleCoursesCount.value))
 
 const loadMore = () => {
     visibleCoursesCount.value += 3
 }
+
+const fetchCourses = async () => {
+  isLoading.value = true
+  try {
+    const { data } = await studentApi.getAvailableCourses()
+    allCourses.value = data.data || data || []
+  } catch (error) {
+    console.error('[Student Courses] Failed to load:', error)
+    allCourses.value = []
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const enrollInCourse = async (courseId) => {
+  try {
+    await studentApi.enrollInCourse(courseId)
+    await fetchCourses()
+  } catch (error) {
+    console.error('[Student Courses] Enroll failed:', error)
+  }
+}
+
+onMounted(() => {
+  fetchCourses()
+})
 </script>

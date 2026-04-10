@@ -149,44 +149,49 @@
 </template>
 
 <script setup>
+import { quizApi } from '@/api/quiz';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
-const totalQuestions = 20;
-const currentQuestionIndex = ref(4); // Start at index 4 (Question 5)
-const selectedOption = ref(1); // Default select first option 'Kotlin' as per design
+const route = useRoute();
+const router = useRouter();
+const quizId = route.params.id;
+
+const quiz = ref(null);
+const questions = ref([]);
+const attemptId = ref(null);
+const isLoading = ref(true);
+const isSubmitting = ref(false);
+
+const totalQuestions = computed(() => questions.value.length || 1);
+const currentQuestionIndex = ref(0);
+const selectedOption = ref(null);
+const answers = ref({}); // { questionId: optionId }
 
 const currentQuestion = computed(() => {
-    // In a real app, this would come from an array. For this specific UI request, we render the requested question.
-    return {
-        id: currentQuestionIndex.value + 1,
-        text: 'ما هي لغة البرمجة المستخدمة في تطوير تطبيقات الأندرويد بشكل أساسي وتعتبر اللغة الرسمية المدعومة من جوجل حالياً؟',
-        options: [
-            { id: 1, text: 'Kotlin (كوتلن)' },
-            { id: 2, text: 'Swift (سويفت)' },
-            { id: 3, text: 'Python (بايثون)' },
-            { id: 4, text: 'C++ (سي بلس بلس)' }
-        ]
-    };
+    if (questions.value.length === 0) {
+        return { id: 1, question_text: 'جاري التحميل...', options: [] };
+    }
+    return questions.value[currentQuestionIndex.value] || questions.value[0];
 });
 
 const progress = computed(() => {
-    return Math.round(((currentQuestionIndex.value + 1) / totalQuestions) * 100);
+    return Math.round(((currentQuestionIndex.value + 1) / totalQuestions.value) * 100);
 });
 
 const remainingQuestions = computed(() => {
-    return totalQuestions - (currentQuestionIndex.value + 1);
+    return totalQuestions.value - (currentQuestionIndex.value + 1);
 });
 
 // Timer Logic
-const totalTimeSeconds = 45 * 60; // 45 minutes
-const timeRemaining = ref(totalTimeSeconds);
+const timeRemaining = ref(45 * 60); // Default 45 min, will be updated from quiz data
 let timerInterval;
 
 const formattedTime = computed(() => {
     const hours = Math.floor(timeRemaining.value / 3600);
     const minutes = Math.floor((timeRemaining.value % 3600) / 60);
     const seconds = timeRemaining.value % 60;
-    
+
     return {
         h: hours.toString().padStart(2, '0'),
         m: minutes.toString().padStart(2, '0'),
@@ -200,21 +205,29 @@ const startTimer = () => {
             timeRemaining.value--;
         } else {
             clearInterval(timerInterval);
+            submitQuiz();
         }
     }, 1000);
 };
 
 const nextQuestion = () => {
-    if (currentQuestionIndex.value < totalQuestions - 1) {
+    // Save current answer
+    if (selectedOption.value !== null) {
+        answers.value[currentQuestion.value.id] = selectedOption.value;
+    }
+    if (currentQuestionIndex.value < totalQuestions.value - 1) {
         currentQuestionIndex.value++;
-        selectedOption.value = null; // Reset selection
+        selectedOption.value = answers.value[questions.value[currentQuestionIndex.value]?.id] || null;
     }
 };
 
 const prevQuestion = () => {
     if (currentQuestionIndex.value > 0) {
+        if (selectedOption.value !== null) {
+            answers.value[currentQuestion.value.id] = selectedOption.value;
+        }
         currentQuestionIndex.value--;
-        selectedOption.value = null;
+        selectedOption.value = answers.value[questions.value[currentQuestionIndex.value]?.id] || null;
     }
 };
 
@@ -222,8 +235,59 @@ const skipQuestion = () => {
     nextQuestion();
 };
 
+const submitQuiz = async () => {
+    if (!attemptId.value) return;
+
+    // Save last answer
+    if (selectedOption.value !== null) {
+        answers.value[currentQuestion.value.id] = selectedOption.value;
+    }
+
+    isSubmitting.value = true;
+    try {
+        const answersPayload = Object.entries(answers.value).map(([questionId, optionId]) => ({
+            question_id: parseInt(questionId),
+            option_id: parseInt(optionId)
+        }));
+
+        await quizApi.submitQuizAttempt(attemptId.value, { answers: answersPayload });
+        clearInterval(timerInterval);
+        router.push('/student/dashboard');
+    } catch (error) {
+        console.error('[Quiz] Submit failed:', error);
+    } finally {
+        isSubmitting.value = false;
+    }
+};
+
+const fetchAndStartQuiz = async () => {
+    isLoading.value = true;
+    try {
+        // Get quiz data
+        const { data: quizData } = await quizApi.getQuiz(quizId);
+        quiz.value = quizData.data || quizData;
+        questions.value = quiz.value.questions || [];
+
+        // Set timer from quiz duration
+        if (quiz.value.duration_minutes) {
+            timeRemaining.value = quiz.value.duration_minutes * 60;
+        }
+
+        // Start quiz attempt
+        const { data: attemptData } = await quizApi.startQuiz(quizId);
+        const attempt = attemptData.data || attemptData;
+        attemptId.value = attempt.id || attempt.attempt_id;
+
+        startTimer();
+    } catch (error) {
+        console.error('[Quiz] Failed to load:', error);
+    } finally {
+        isLoading.value = false;
+    }
+};
+
 onMounted(() => {
-    startTimer();
+    fetchAndStartQuiz();
 });
 
 onUnmounted(() => {
