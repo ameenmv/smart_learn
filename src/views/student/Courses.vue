@@ -41,43 +41,74 @@
       </div>
     </div>
 
-    <!-- Courses Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <div v-for="(course, index) in courses" :key="index" class="flex flex-col bg-bg-surface rounded-xl overflow-hidden shadow-sm border border-border-base group hover:shadow-md transition-all duration-300">
-        <div class="w-full bg-center bg-no-repeat aspect-video bg-cover relative" :style="{ backgroundImage: `url(${course.image})` }">
-          <div class="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors"></div>
-          <div v-if="course.status === 'ongoing'" class="absolute top-3 right-3 bg-primary text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">مستمر</div>
-        </div>
+    <!-- Loading State -->
+    <div v-if="isLoading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div v-for="i in 6" :key="'course-skel-'+i" class="flex flex-col bg-bg-surface rounded-xl overflow-hidden shadow-sm border border-border-base">
+        <div class="w-full aspect-video bg-border-base/30 animate-pulse"></div>
         <div class="p-5 flex flex-col gap-4">
+          <div class="flex flex-col gap-2">
+            <div class="h-6 w-3/4 bg-border-base/50 rounded animate-pulse"></div>
+            <div class="h-4 w-1/2 bg-border-base/50 rounded animate-pulse"></div>
+          </div>
+          <div class="flex flex-col gap-2 mt-2">
+            <div class="h-3 w-1/4 bg-border-base/50 rounded animate-pulse"></div>
+            <div class="h-2 w-full bg-border-base/30 rounded-full animate-pulse"></div>
+          </div>
+          <div class="flex items-center justify-between pt-4 border-t border-border-base mt-2">
+            <div class="h-4 w-12 bg-border-base/50 rounded animate-pulse"></div>
+            <div class="h-8 w-24 bg-border-base/50 rounded-lg animate-pulse"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div v-else-if="courses.length === 0" class="bg-bg-surface rounded-xl border border-border-base border-dashed p-16 flex flex-col items-center justify-center text-center">
+      <span class="material-symbols-outlined text-6xl text-text-muted mb-4 opacity-50">search_off</span>
+      <h3 class="text-xl font-bold text-text-main mb-2">لا توجد مقررات دراسية</h3>
+      <p class="text-text-muted">لم نتمكن من العثور على أي مقررات تطابق المقررات المتاحة لك حالياً.</p>
+    </div>
+
+    <!-- Courses Grid -->
+    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div v-for="course in courses" :key="course.id" class="flex flex-col bg-bg-surface rounded-xl overflow-hidden shadow-sm border border-border-base group hover:shadow-md transition-all duration-300">
+        <RouterLink :to="`/student/courses/${course.id}`" class="block w-full bg-center bg-no-repeat aspect-video bg-cover relative" :style="course.image ? { backgroundImage: `url(${course.image})` } : {}">
+          <div v-if="!course.image" class="w-full h-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+            <span class="material-symbols-outlined text-5xl text-primary/30">auto_stories</span>
+          </div>
+          <div class="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors"></div>
+          <div v-if="course.status === 'active'" class="absolute top-3 right-3 bg-primary text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">متاح</div>
+        </RouterLink>
+        <div class="p-5 flex flex-col gap-4 flex-1">
           <div class="flex flex-col gap-1">
-            <h3 class="text-text-main text-lg font-bold group-hover:text-primary transition-colors">{{ course.title }}</h3>
+            <RouterLink :to="`/student/courses/${course.id}`" class="text-text-main text-lg font-bold group-hover:text-primary transition-colors line-clamp-2">{{ course.title }}</RouterLink>
             <div class="flex items-center gap-2 text-text-muted">
               <span class="material-symbols-outlined text-[18px]">person</span>
-              <p class="text-sm font-normal">{{ course.instructor }}</p>
+              <p class="text-sm font-normal">{{ course.instructor_name || 'محاضر' }}</p>
             </div>
           </div>
-          <div class="flex flex-col gap-2">
+          <div class="flex flex-col gap-2 mt-auto">
             <div class="flex justify-between text-xs font-bold" :class="course.progress > 0 ? '' : 'text-text-muted'">
               <span v-if="course.progress > 0" class="text-primary">نسبة الإنجاز</span>
               <span v-else>لم يبدأ بعد</span>
-              <span :class="course.progress > 0 ? 'text-text-main' : ''">{{ course.progressPercent }}</span>
+              <span :class="course.progress > 0 ? 'text-text-main' : ''">{{ course.progress || 0 }}%</span>
             </div>
             <div class="w-full bg-bg-surface-hover h-2 rounded-full overflow-hidden">
-              <div class="bg-primary h-full rounded-full" :style="{ width: `${course.progress}%` }"></div>
+              <div class="bg-primary h-full rounded-full transition-all" :style="{ width: `${course.progress || 0}%` }"></div>
             </div>
           </div>
-          <div class="flex items-center justify-between pt-2 border-t border-border-base">
+          <div class="flex items-center justify-between pt-4 border-t border-border-base mt-2">
             <div class="flex items-center gap-1 text-text-muted">
               <span class="material-symbols-outlined text-[18px]">bar_chart</span>
-              <span class="text-xs">{{ course.level }}</span>
+              <span class="text-xs">{{ course.level || 'مبتدئ' }}</span>
             </div>
-            <RouterLink v-if="course.progress > 0" to="/student/courses/101" class="bg-primary text-white px-5 py-2 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-primary/90 transition-all cursor-pointer">
+            <RouterLink v-if="course.progress > 0" :to="`/student/courses/${course.id}`" class="bg-primary text-white px-5 py-2 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-primary/90 transition-all cursor-pointer">
               متابعة التعلم
               <span class="material-symbols-outlined text-[18px]">arrow_back</span>
             </RouterLink>
-            <button v-else class="bg-bg-surface-hover text-text-main px-5 py-2 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-border-base transition-all cursor-pointer border border-border-base">
+            <RouterLink v-else :to="`/student/courses/${course.id}`" class="bg-bg-surface-hover text-text-main px-5 py-2 rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-border-base transition-all cursor-pointer border border-border-base">
               عرض التفاصيل
-            </button>
+            </RouterLink>
           </div>
         </div>
       </div>
