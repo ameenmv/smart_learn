@@ -12,13 +12,14 @@
       </div>
 
       <div class="flex items-center gap-3 mb-8">
-        <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12 border-2 border-primary/20"
+        <div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12 border-2 border-primary/20 flex flex-col items-center justify-center bg-primary/5"
           aria-label="User profile picture of an instructor"
-          style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuASGxkrppa2pIPv0iskBD9PPlG34F1e5pz57GKvCiS0H1M2x0gQcDhyBkF-G7OxlsvcJOQ5dvR7cicl0tWStNxrxOuS6II5iCd4qt5kAWxyKiv3XYrnDReVWOUwjxOa-OubpfO2NRSaatJZrY0RfApPbw4zbivcn2EkHBNNMU6pHsJ0SxfsXsFjc0jOqUb4DZTEJCxV1DmF4-bkETWmEucd7E1kuLhAE_Wp2kp1UXPVhbqhnq6_UaqGSn0CAv09EcTNgEZUdQkzsUyS");'>
+          :style="{ backgroundImage: authStore.user?.profile_picture ? `url(${authStore.user.profile_picture})` : 'url(https://lh3.googleusercontent.com/aida-public/AB6AXuASGxkrppa2pIPv0iskBD9PPlG34F1e5pz57GKvCiS0H1M2x0gQcDhyBkF-G7OxlsvcJOQ5dvR7cicl0tWStNxrxOuS6II5iCd4qt5kAWxyKiv3XYrnDReVWOUwjxOa-OubpfO2NRSaatJZrY0RfApPbw4zbivcn2EkHBNNMU6pHsJ0SxfsXsFjc0jOqUb4DZTEJCxV1DmF4-bkETWmEucd7E1kuLhAE_Wp2kp1UXPVhbqhnq6_UaqGSn0CAv09EcTNgEZUdQkzsUyS)' }">
+          <span v-if="!authStore.user?.profile_picture && !authStore.user" class="material-symbols-outlined text-text-muted">person</span>
         </div>
         <div class="flex flex-col">
-          <h1 class="text-text-main text-base font-bold leading-none">د. أحمد علي</h1>
-          <p class="text-text-muted text-xs font-medium mt-1">محاضر جامعي</p>
+          <h1 class="text-text-main text-base font-bold leading-none truncate max-w-[130px]">{{ authStore.user?.name || 'دكتور جامعي' }}</h1>
+          <p class="text-text-muted text-xs font-medium mt-1 truncate max-w-[130px]">{{ authStore.user?.role === 'instructor' ? 'محاضر جامعي' : (authStore.user?.role || 'محاضر') }}</p>
         </div>
       </div>
       <nav class="flex flex-col gap-1 flex-1">
