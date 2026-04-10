@@ -10,11 +10,11 @@
       <div class="flex flex-col gap-4 bg-bg-surface p-4 rounded-xl shadow-sm border border-border-base transition-colors duration-300">
         <div class="w-full">
           <label class="flex flex-col w-full h-14">
-            <div class="flex w-full flex-1 items-stretch rounded-lg bg-bg-surface-hover overflow-hidden transition-colors duration-300">
+            <div class="flex w-full flex-1 items-stretch rounded-lg bg-bg-surface-hover overflow-hidden transition-colors duration-300 border border-transparent focus-within:border-primary/50">
               <div class="text-text-muted flex items-center justify-center px-4">
                 <span class="material-symbols-outlined">search</span>
               </div>
-              <input class="form-input flex w-full min-w-0 flex-1 border-none bg-transparent focus:outline-0 focus:ring-0 text-text-main placeholder:text-text-muted text-base font-normal px-2" placeholder="ابحث عن دورة تدريبية، مدرس، أو تخصص..."/>
+              <input v-model="searchQuery" class="form-input flex w-full min-w-0 flex-1 border-none bg-transparent focus:outline-0 focus:ring-0 text-text-main placeholder:text-text-muted text-base font-normal px-2" placeholder="ابحث عن دورة تدريبية، مدرس، أو تخصص..."/>
               <button class="bg-primary text-white px-8 font-bold text-sm hover:bg-primary/90 transition-colors cursor-pointer">بحث</button>
             </div>
           </label>
