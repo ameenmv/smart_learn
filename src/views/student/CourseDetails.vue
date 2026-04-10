@@ -218,87 +218,53 @@
       </div>
     </div>
 
-    <!-- Quiz Tab Content (Inline) -->
-    <div v-else-if="activeTab === 'quizzes'" class="w-full flex flex-col items-center justify-start py-8">
-      <div class="w-full max-w-[800px] flex flex-col gap-6">
-        <!-- Progress Card -->
-        <div class="w-full bg-bg-surface p-6 rounded-xl shadow-sm border border-border-base transition-colors duration-300">
-          <div class="flex flex-col gap-3">
-            <div class="flex justify-between items-center">
-              <p class="text-text-main text-base font-semibold leading-normal">التقدم في الاختبار</p>
-              <p class="text-primary text-sm font-bold leading-normal">25% مكتمل</p>
-            </div>
-            <div class="h-2.5 w-full bg-bg-base rounded-full overflow-hidden">
-              <div class="h-full bg-primary transition-all duration-500 rounded-full" style="width: 25%;"></div>
-            </div>
-            <div class="flex justify-between">
-              <p class="text-text-muted text-sm font-normal">السؤال ٥ من ٢٠</p>
-              <p class="text-text-muted text-sm font-normal">باقي ١٥ سؤالاً</p>
-            </div>
-          </div>
+    <!-- Quiz Tab Content -->
+    <div v-else-if="activeTab === 'quizzes'" class="w-full flex flex-col justify-start py-8">
+      <div class="w-full max-w-[800px] flex flex-col gap-6 mx-auto">
+        <!-- Locked State if not enrolled -->
+        <div v-if="!course.is_enrolled" class="bg-bg-surface border border-border-base rounded-xl p-12 flex flex-col items-center justify-center text-center">
+          <span class="material-symbols-outlined text-6xl text-primary mb-4">lock</span>
+          <h3 class="text-xl font-bold text-text-main mb-2">الاختبارات مقفلة</h3>
+          <p class="text-text-muted mb-6">قم بالانضمام للمقرر أولاً للوصول إلى الاختبارات وتقييم مستواك.</p>
+          <button @click="enrollInCourse" :disabled="isEnrolling" class="bg-primary text-white py-3 px-8 rounded-lg font-bold hover:bg-blue-700 transition-colors flex justify-center items-center gap-2 shadow-lg shadow-primary/20 disabled:opacity-50 cursor-pointer">
+             <span v-if="isEnrolling" class="size-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+             <span v-else class="material-symbols-outlined">add_task</span>
+             انضم للمقرر الآن
+          </button>
         </div>
 
-        <!-- Question Card -->
-        <div class="@container w-full">
-          <div class="flex flex-col items-stretch justify-start rounded-xl shadow-lg bg-bg-surface border border-border-base overflow-hidden transition-colors duration-300">
-            <!-- <div class="w-full bg-center bg-no-repeat aspect-[21/9] bg-cover bg-primary/5 border-b border-border-base flex items-center justify-center" data-alt="Programming code visualization background" style="background-image: linear-gradient(135deg, rgba(19, 91, 236, 0.13) 0%, rgba(255, 255, 255, 0) 100%);">
-              <span class="material-symbols-outlined text-primary/30 text-6xl">code</span>
-            </div> -->
-            <div class="flex w-full min-w-72 grow flex-col items-stretch justify-center gap-4 p-8">
-              <div class="inline-flex items-center self-start px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary mb-2">
-                اختيار من متعدد
+        <!-- Empty State if no quizzes -->
+        <div v-else-if="!course.quizzes || course.quizzes.length === 0" class="bg-bg-surface border border-border-base border-dashed rounded-xl p-12 flex flex-col items-center justify-center text-center">
+            <span class="material-symbols-outlined text-6xl text-text-muted mb-4 opacity-50">quiz</span>
+            <h3 class="text-xl font-bold text-text-main mb-2">لا يوجد اختبارات</h3>
+            <p class="text-text-muted">لم يتم إضافة أي اختبارات لهذا المقرر حتى الآن.</p>
+        </div>
+
+        <!-- Quizzes List -->
+        <template v-else>
+          <div v-for="quiz in course.quizzes" :key="quiz.id" class="bg-bg-surface border border-border-base rounded-xl p-6 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 hover:border-primary/50 hover:shadow-md transition-all">
+            <div class="flex items-start gap-4">
+              <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-primary text-2xl">quiz</span>
               </div>
-              <h3 class="text-text-main text-xl lg:text-2xl font-bold leading-relaxed tracking-tight">
-                ما هي لغة البرمجة المستخدمة في تطوير تطبيقات الأندرويد بشكل أساسي وتعتبر اللغة الرسمية المدعومة من جوجل حالياً؟
-              </h3>
-              <p class="text-text-muted text-base font-normal">اختر إجابة واحدة صحيحة من الخيارات التالية:</p>
+              <div>
+                <h4 class="text-lg font-bold text-text-main mb-1">{{ quiz.title || 'اختبار تقييمي' }}</h4>
+                <div class="flex items-center gap-4 text-sm text-text-muted">
+                  <span class="flex items-center gap-1"><span class="material-symbols-outlined text-base">timer</span> {{ quiz.duration_minutes || 30 }} دقيقة</span>
+                  <span class="flex items-center gap-1"><span class="material-symbols-outlined text-base">format_list_numbered</span> {{ quiz.questions_count || 0 }} سؤال</span>
+                </div>
+              </div>
             </div>
             
-            <div class="flex flex-col gap-4 p-8 pt-0 radio-dot">
-              <label class="group flex items-center gap-4 rounded-xl border-2 border-solid border-border-base p-4 flex-row-reverse cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-all">
-                <input checked class="h-6 w-6 border-2 border-border-base bg-transparent text-transparent checked:border-primary checked:bg-[image:--radio-dot-svg] focus:outline-none focus:ring-0 focus:ring-offset-0 checked:focus:border-primary appearance-none" name="quiz-option" type="radio"/>
-                <div class="flex grow flex-col">
-                  <p class="text-text-main text-base font-semibold group-hover:text-primary transition-colors">Kotlin (كوتلن)</p>
-                </div>
-              </label>
-              <label class="group flex items-center gap-4 rounded-xl border-2 border-solid border-border-base p-4 flex-row-reverse cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-all">
-                <input class="h-6 w-6 border-2 border-border-base bg-transparent text-transparent checked:border-primary checked:bg-[image:--radio-dot-svg] focus:outline-none focus:ring-0 focus:ring-offset-0 checked:focus:border-primary appearance-none" name="quiz-option" type="radio"/>
-                <div class="flex grow flex-col">
-                  <p class="text-text-main text-base font-semibold group-hover:text-primary transition-colors">Swift (سويفت)</p>
-                </div>
-              </label>
-              <label class="group flex items-center gap-4 rounded-xl border-2 border-solid border-border-base p-4 flex-row-reverse cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-all">
-                <input class="h-6 w-6 border-2 border-border-base bg-transparent text-transparent checked:border-primary checked:bg-[image:--radio-dot-svg] focus:outline-none focus:ring-0 focus:ring-offset-0 checked:focus:border-primary appearance-none" name="quiz-option" type="radio"/>
-                <div class="flex grow flex-col">
-                  <p class="text-text-main text-base font-semibold group-hover:text-primary transition-colors">Python (بايثون)</p>
-                </div>
-              </label>
-              <label class="group flex items-center gap-4 rounded-xl border-2 border-solid border-border-base p-4 flex-row-reverse cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-all">
-                <input class="h-6 w-6 border-2 border-border-base bg-transparent text-transparent checked:border-primary checked:bg-[image:--radio-dot-svg] focus:outline-none focus:ring-0 focus:ring-offset-0 checked:focus:border-primary appearance-none" name="quiz-option" type="radio"/>
-                <div class="flex grow flex-col">
-                  <p class="text-text-main text-base font-semibold group-hover:text-primary transition-colors">C++ (سي بلس بلس)</p>
-                </div>
-              </label>
-            </div>
+            <RouterLink 
+              :to="`/student/quiz/${quiz.id}`" 
+              class="w-full sm:w-auto px-6 py-3 bg-primary text-white font-bold rounded-lg hover:bg-primary/90 transition-all flex justify-center items-center gap-2"
+            >
+              <span class="material-symbols-outlined">play_arrow</span>
+              بدء الاختبار
+            </RouterLink>
           </div>
-        </div>
-
-        <!-- Navigation Buttons -->
-        <div class="flex items-center justify-between mt-4">
-          <button class="flex items-center justify-center gap-2 min-w-[120px] px-6 h-12 rounded-lg border-2 border-border-base text-text-main text-base font-bold hover:bg-bg-surface-hover transition-colors cursor-pointer">
-            <span class="material-symbols-outlined">arrow_forward</span>
-            <span>السابق</span>
-          </button>
-          <div class="flex gap-4">
-            <button class="flex items-center justify-center gap-2 min-w-[120px] px-6 h-12 rounded-lg border-2 border-primary/20 bg-primary/5 text-primary text-base font-bold hover:bg-primary/10 transition-colors cursor-pointer">
-              <span>تخطي</span>
-            </button>
-            <button class="flex items-center justify-center gap-2 min-w-[140px] px-8 h-12 rounded-lg bg-primary text-white text-base font-bold hover:bg-primary/90 shadow-md shadow-primary/20 transition-all cursor-pointer">
-              <span>التالي</span>
-              <span class="material-symbols-outlined">arrow_back</span>
-            </button>
-          </div>
-        </div>
+        </template>
       </div>
     </div>
 
