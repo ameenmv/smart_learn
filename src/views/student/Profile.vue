@@ -249,7 +249,9 @@ const { toast, showToast } = useToast()
 const { errors, setErrors, clearErrors, getError, hasError, getGeneralError } = useApiErrors()
 
 // ── State ────────────────────────────────────────────────────────────
-const profileImage = ref('https://lh3.googleusercontent.com/aida-public/AB6AXuBFAjg5ge9L7hJ-oXM4f_kK_ir8YtK3S9gYM9d31g_rTTHwq10JkxkIehAlGTfQ4FHdbdkyxRAJpNLuJdNFXXCIjIECSXYmWFI6gwZmuOh4D9wmEDQp9NtuG7ai8JYy6MZUQBRk7i04ic9EJcI7WstDi8cWD3CnBBdEtf1FxP0SEY5dtizWnsGQFwZCLkMudUVmuYs7wvYSsYq1mXVzdCzfRaIMTP8H_uVv0Bj0oWSN5Sa9H8mnQn2z31TTbcWE-0r5dAzox_H_rCoz')
+const DEFAULT_AVATAR = 'https://lh3.googleusercontent.com/aida-public/AB6AXuAvRrl-zLbMRME5_ZXm21NvDaOOyhhvHKSCYsKOJy-QqgMBibTlKedN0jo3iHQeFzCBU3DR9BuPTpkmdDki4zRSFsD9xaHTFfZnrznnHqlXBXFXGkFARsPgJWdt0nzr6R_RExEkaisv-0oSFF64VIObuVEfYfrW-lJHboFVx2rmc77K5uimZGtxhCHh42ED4jIzvRwmKv6R_FgczAcRorZuB_ZQP_1dZiwdXeCWK4iNhl7wqiDQS-kN-g73lrRjAOd_7usnj27t3AQg';
+
+const profileImage = ref(authStore.user?.profile_picture || DEFAULT_AVATAR)
 const fileInput = ref(null)
 const currentTheme = ref('light')
 const currentLang = ref('ar')

@@ -23,7 +23,10 @@
               <span>{{ formattedTime.h }}</span><span>:</span><span>{{ formattedTime.m }}</span><span>:</span><span>{{ formattedTime.s }}</span>
             </div>
           </div>
-          <div class="hidden md:block bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-primary/20" data-alt="Student profile avatar" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBykAEwHl8V8vZ1_V7FpukYTOrjsAEqOdBLWiBrv-cJH4ckg0_KUHhE4NDR9F6P13WT3LQ6yoqY5ug6y6VwIDgGQdaOH5p5ywVsgZCQFhN85dirAKu5inxncCwYVxl5vuCRXJ3iNYvC6-7e452dhKOphrtpqte7U2O93z0p2pZfskHX_oMHEJhFLerTMue7GzyafNNwn5mVZq5CfgwxIYhmC8_AA7dfDkqlM117-h7FlcE-EK8YgdpF9bvaAV08h3pfBWoFxeuFfC-X");'></div>
+          <div class="hidden md:flex bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-primary/20 items-center justify-center bg-primary/5" data-alt="Student profile avatar" 
+          :style="{ backgroundImage: authStore.user?.profile_picture ? `url(${authStore.user.profile_picture})` : 'url(https://lh3.googleusercontent.com/aida-public/AB6AXuAvRrl-zLbMRME5_ZXm21NvDaOOyhhvHKSCYsKOJy-QqgMBibTlKedN0jo3iHQeFzCBU3DR9BuPTpkmdDki4zRSFsD9xaHTFfZnrznnHqlXBXFXGkFARsPgJWdt0nzr6R_RExEkaisv-0oSFF64VIObuVEfYfrW-lJHboFVx2rmc77K5uimZGtxhCHh42ED4jIzvRwmKv6R_FgczAcRorZuB_ZQP_1dZiwdXeCWK4iNhl7wqiDQS-kN-g73lrRjAOd_7usnj27t3AQg)' }">
+            <span v-if="!authStore.user?.profile_picture && !authStore.user" class="material-symbols-outlined text-text-muted text-[20px]">person</span>
+          </div>
         </div>
       </div>
     </header>
@@ -150,11 +153,13 @@
 
 <script setup>
 import { quizApi } from '@/api/quiz';
+import { useAuthStore } from '@/stores/auth';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const route = useRoute();
 const router = useRouter();
+const authStore = useAuthStore();
 const quizId = route.params.id;
 
 const quiz = ref(null);

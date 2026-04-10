@@ -1,8 +1,10 @@
 <script setup>
 import { useDark, useToggle } from '@vueuse/core';
+import { useAuthStore } from '@/stores/auth';
 
 const isDark = useDark()
 const toggleDark = useToggle(isDark)
+const authStore = useAuthStore()
 </script>
 
 <template>
@@ -44,9 +46,11 @@ const toggleDark = useToggle(isDark)
         <div class="h-8 w-[1px] bg-border-base mx-1"></div>
         
         <!-- User Avatar (Small) -->
-        <RouterLink to="/student/profile" class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 cursor-pointer border border-border-base hover:border-primary transition-all block" 
+        <RouterLink to="/student/profile" class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 cursor-pointer border border-border-base hover:border-primary transition-all flex items-center justify-center bg-primary/5" 
              aria-label="قائمة المستخدم"
-             style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAjVsJRFTmoARmuaRiCxWdwht3h6qxDiRI4-tVB-JTxYUh9OvLSJSY3LjwCVaZOojuKgd4fwc87kuKXHQI1lzhfaV0a287k0pni8wTrw-Bar1NEqTZpIkZfe1i_GW0v0CFbLFce2t01bCG0ABrmFeEpbEK4a2byr5R-Zp-n4OiZyS4vqrXgLxzcjVWMt3G8czXGDPtpC4zBe8e7UVG3CHoGpQjrZmA0Ke3aBDCLa_DV5xH611nnw6i4ELDlkPDzwj_MnWatgZJt9Od8");'></RouterLink>
+             :style="{ backgroundImage: authStore.user?.profile_picture ? `url(${authStore.user.profile_picture})` : 'url(https://lh3.googleusercontent.com/aida-public/AB6AXuAvRrl-zLbMRME5_ZXm21NvDaOOyhhvHKSCYsKOJy-QqgMBibTlKedN0jo3iHQeFzCBU3DR9BuPTpkmdDki4zRSFsD9xaHTFfZnrznnHqlXBXFXGkFARsPgJWdt0nzr6R_RExEkaisv-0oSFF64VIObuVEfYfrW-lJHboFVx2rmc77K5uimZGtxhCHh42ED4jIzvRwmKv6R_FgczAcRorZuB_ZQP_1dZiwdXeCWK4iNhl7wqiDQS-kN-g73lrRjAOd_7usnj27t3AQg)' }">
+             <span v-if="!authStore.user?.profile_picture && !authStore.user" class="material-symbols-outlined text-text-muted text-[20px]">person</span>
+        </RouterLink>
       </div>
     </div>
   </header>
