@@ -5,7 +5,11 @@
       <div class="flex flex-col md:flex-row items-center p-8 gap-8">
         <div class="flex-1">
           <h3 class="text-3xl font-bold text-text-main mb-2">أهلاً بك مجدداً، {{ studentName }} 👋</h3>
-          <p class="text-text-muted text-lg leading-relaxed mb-6">لديك {{ courses.length }} {{ courses.length === 1 ? 'مقرر مسجل' : 'مقررات مسجلة' }} حالياً في Smart Learn. استمر في التعلم.</p>
+          <p v-if="isLoading" class="text-text-muted text-lg leading-relaxed mb-6 flex items-center gap-2">
+             جاري جلب إحصائيات مقرراتك... 
+             <span class="size-4 border-2 border-text-muted/30 border-t-text-muted rounded-full animate-spin"></span>
+          </p>
+          <p v-else class="text-text-muted text-lg leading-relaxed mb-6">لديك {{ courses.length }} {{ courses.length === 1 ? 'مقرر مسجل' : 'مقررات مسجلة' }} حالياً في Smart Learn. استمر في التعلم.</p>
           <div class="flex gap-3">
             <RouterLink to="/student/courses" class="bg-primary text-white px-6 py-2.5 rounded-lg font-bold text-sm shadow-lg shadow-primary/30 hover:bg-blue-700 transition-all cursor-pointer">
               تصفح المقررات
@@ -24,34 +28,46 @@
 
     <!-- Stats Grid -->
     <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      <div class="bg-bg-surface p-6 rounded-xl border border-border-base shadow-sm flex flex-col gap-2 transition-colors duration-300">
-        <div class="flex items-center justify-between mb-2">
-          <span class="material-symbols-outlined text-primary bg-primary/10 p-2 rounded-lg">library_books</span>
+      <!-- Loading Skeletons -->
+      <template v-if="isLoading">
+        <div v-for="i in 4" :key="'stat-skel-'+i" class="bg-bg-surface p-6 rounded-xl border border-border-base shadow-sm flex flex-col gap-2">
+          <div class="size-10 rounded-lg bg-border-base/50 animate-pulse mb-2"></div>
+          <div class="h-4 w-24 bg-border-base/50 rounded animate-pulse"></div>
+          <div class="h-8 w-12 bg-border-base/50 rounded animate-pulse mt-1"></div>
         </div>
-        <p class="text-text-muted text-sm">المقررات المسجلة</p>
-        <p class="text-3xl font-bold text-text-main">{{ courses.length }}</p>
-      </div>
-      <div class="bg-bg-surface p-6 rounded-xl border border-border-base shadow-sm flex flex-col gap-2 transition-colors duration-300">
-        <div class="flex items-center justify-between mb-2">
-          <span class="material-symbols-outlined text-orange-500 bg-orange-50 p-2 rounded-lg dark:bg-orange-900/20">auto_stories</span>
+      </template>
+
+      <!-- Actual Stats -->
+      <template v-else>
+        <div class="bg-bg-surface p-6 rounded-xl border border-border-base shadow-sm flex flex-col gap-2 transition-colors duration-300">
+          <div class="flex items-center justify-between mb-2">
+            <span class="material-symbols-outlined text-primary bg-primary/10 p-2 rounded-lg">library_books</span>
+          </div>
+          <p class="text-text-muted text-sm">المقررات المسجلة</p>
+          <p class="text-3xl font-bold text-text-main">{{ courses.length }}</p>
         </div>
-        <p class="text-text-muted text-sm">إجمالي المحاضرات</p>
-        <p class="text-3xl font-bold text-text-main">{{ totalLectures }}</p>
-      </div>
-      <div class="bg-bg-surface p-6 rounded-xl border border-border-base shadow-sm flex flex-col gap-2 transition-colors duration-300">
-        <div class="flex items-center justify-between mb-2">
-          <span class="material-symbols-outlined text-purple-500 bg-purple-50 p-2 rounded-lg dark:bg-purple-900/20">workspace_premium</span>
+        <div class="bg-bg-surface p-6 rounded-xl border border-border-base shadow-sm flex flex-col gap-2 transition-colors duration-300">
+          <div class="flex items-center justify-between mb-2">
+            <span class="material-symbols-outlined text-orange-500 bg-orange-50 p-2 rounded-lg dark:bg-orange-900/20">auto_stories</span>
+          </div>
+          <p class="text-text-muted text-sm">إجمالي المحاضرات</p>
+          <p class="text-3xl font-bold text-text-main">{{ totalLectures }}</p>
         </div>
-        <p class="text-text-muted text-sm">الشهادات</p>
-        <p class="text-3xl font-bold text-text-main">{{ certificatesCount }}</p>
-      </div>
-      <div class="bg-bg-surface p-6 rounded-xl border border-border-base shadow-sm flex flex-col gap-2 transition-colors duration-300">
-        <div class="flex items-center justify-between mb-2">
-          <span class="material-symbols-outlined text-blue-500 bg-blue-50 p-2 rounded-lg dark:bg-blue-900/20">trending_up</span>
+        <div class="bg-bg-surface p-6 rounded-xl border border-border-base shadow-sm flex flex-col gap-2 transition-colors duration-300">
+          <div class="flex items-center justify-between mb-2">
+            <span class="material-symbols-outlined text-purple-500 bg-purple-50 p-2 rounded-lg dark:bg-purple-900/20">workspace_premium</span>
+          </div>
+          <p class="text-text-muted text-sm">الشهادات</p>
+          <p class="text-3xl font-bold text-text-main">{{ certificatesCount }}</p>
         </div>
-        <p class="text-text-muted text-sm">المقررات النشطة</p>
-        <p class="text-3xl font-bold text-text-main">{{ activeCourses }}</p>
-      </div>
+        <div class="bg-bg-surface p-6 rounded-xl border border-border-base shadow-sm flex flex-col gap-2 transition-colors duration-300">
+          <div class="flex items-center justify-between mb-2">
+            <span class="material-symbols-outlined text-blue-500 bg-blue-50 p-2 rounded-lg dark:bg-blue-900/20">trending_up</span>
+          </div>
+          <p class="text-text-muted text-sm">المقررات النشطة</p>
+          <p class="text-3xl font-bold text-text-main">{{ activeCourses }}</p>
+        </div>
+      </template>
     </section>
 
     <!-- Continue Learning Section -->
@@ -62,8 +78,24 @@
       </div>
 
       <!-- Loading State -->
-      <div v-if="isLoading" class="flex justify-center py-12">
-        <span class="size-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></span>
+      <div v-if="isLoading" class="flex gap-6 overflow-x-hidden pb-4">
+        <div v-for="i in 3" :key="'course-skel-'+i" class="min-w-[320px] bg-bg-surface rounded-xl overflow-hidden border border-border-base shadow-sm flex flex-col">
+          <div class="h-36 bg-border-base/30 animate-pulse"></div>
+          <div class="p-5 flex flex-col gap-4">
+            <div>
+              <div class="h-5 w-48 bg-border-base/50 rounded animate-pulse mb-2"></div>
+              <div class="h-3 w-32 bg-border-base/50 rounded animate-pulse"></div>
+            </div>
+            <div>
+              <div class="flex justify-between mb-1.5">
+                <div class="h-3 w-16 bg-border-base/50 rounded animate-pulse"></div>
+                <div class="h-3 w-16 bg-border-base/50 rounded animate-pulse"></div>
+              </div>
+              <div class="w-full h-1.5 bg-border-base/30 rounded-full animate-pulse"></div>
+            </div>
+            <div class="h-9 w-full bg-border-base/50 rounded-lg animate-pulse mt-1"></div>
+          </div>
+        </div>
       </div>
 
       <!-- Empty State -->
