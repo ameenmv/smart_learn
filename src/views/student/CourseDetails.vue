@@ -161,126 +161,43 @@
         </div>
 
         <div class="space-y-4">
-          <!-- Module 1 -->
-          <div class="bg-bg-surface border border-border-base rounded-xl overflow-hidden transition-colors duration-300">
-            <button class="w-full flex items-center justify-between p-5 hover:bg-bg-surface-hover transition-colors cursor-pointer">
-              <div class="flex items-center gap-4">
-                <div class="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                  <span class="material-symbols-outlined text-green-600">check_circle</span>
-                </div>
-                <div class="text-right">
-                  <h4 class="font-bold text-text-main">الوحدة الأولى: مدخل إلى علم الاقتصاد</h4>
-                  <p class="text-xs text-text-muted mt-1">4 دروس • 1 اختبار قصير</p>
-                </div>
+          <!-- When Enrolled but no lectures yet -->
+          <div v-if="course.is_enrolled && (!course.lectures || course.lectures.length === 0)" class="bg-bg-surface border border-border-base border-dashed rounded-xl p-12 flex flex-col items-center justify-center text-center">
+            <span class="material-symbols-outlined text-6xl text-text-muted mb-4 opacity-50">menu_book</span>
+            <h3 class="text-xl font-bold text-text-main mb-2">المحتوى قيد التجهيز</h3>
+            <p class="text-text-muted">لم يتم إضافة أي دروس لهذا المقرر حتى الآن.</p>
+          </div>
+
+          <!-- When NOT Enrolled: Locked State -->
+          <div v-else-if="!course.is_enrolled" class="relative bg-bg-surface border border-border-base rounded-xl overflow-hidden min-h-[400px] flex flex-col items-center justify-center text-center p-8">
+            <div class="absolute inset-0 bg-gradient-to-b from-transparent to-bg-surface/90 z-10"></div>
+            <!-- Fake blurred content behind -->
+            <div class="absolute top-8 left-8 right-8 space-y-4 opacity-20 pointer-events-none blur-[2px]">
+              <div class="h-16 bg-border-base rounded-xl w-full"></div>
+              <div class="h-16 bg-border-base rounded-xl w-full"></div>
+              <div class="h-16 bg-border-base rounded-xl w-full"></div>
+            </div>
+            
+            <div class="relative z-20 flex flex-col items-center max-w-sm mt-10">
+              <div class="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-6">
+                <span class="material-symbols-outlined text-4xl text-primary">lock</span>
               </div>
-              <span class="material-symbols-outlined text-text-muted">expand_less</span>
-            </button>
-            <div class="p-2 border-t border-border-base">
-              <div class="space-y-1">
-                <div class="flex items-center justify-between p-3 rounded-lg hover:bg-bg-surface-hover transition-colors cursor-pointer group">
-                  <div class="flex items-center gap-3">
-                    <span class="material-symbols-outlined text-text-muted group-hover:text-primary">play_circle_outline</span>
-                    <span class="text-sm text-text-main">تعريف علم الاقتصاد والمشكلة الاقتصادية</span>
-                  </div>
-                  <span class="text-xs text-green-500 font-medium">مكتمل</span>
-                </div>
-                <div class="flex items-center justify-between p-3 rounded-lg hover:bg-bg-surface-hover transition-colors cursor-pointer group">
-                  <div class="flex items-center gap-3">
-                    <span class="material-symbols-outlined text-text-muted group-hover:text-primary">description</span>
-                    <span class="text-sm text-text-main">منحنى إمكانيات الإنتاج</span>
-                  </div>
-                  <span class="text-xs text-green-500 font-medium">مكتمل</span>
-                </div>
-                <div class="flex items-center justify-between p-3 rounded-lg hover:bg-bg-surface-hover transition-colors cursor-pointer group">
-                  <div class="flex items-center gap-3">
-                    <span class="material-symbols-outlined text-text-muted group-hover:text-primary">quiz</span>
-                    <span class="text-sm text-text-main">اختبار تقييمي: أساسيات الاقتصاد</span>
-                  </div>
-                  <span class="text-xs text-green-500 font-medium">9/10</span>
-                </div>
-              </div>
+              <h3 class="text-2xl font-bold text-text-main mb-3">محتوى المقرر مقفل</h3>
+              <p class="text-text-muted mb-8 leading-relaxed">قم بالانضمام للمقرر الآن لتتمكن من فتح جميع الدروس والمحاضرات والاختبارات المتاحة وتتبع تقدمك.</p>
+              <button @click="enrollInCourse" :disabled="isEnrolling" class="w-full bg-primary text-white py-3 px-8 rounded-lg font-bold hover:bg-blue-700 transition-colors flex justify-center items-center gap-2 shadow-lg shadow-primary/20 disabled:opacity-50 cursor-pointer">
+                <span v-if="isEnrolling" class="size-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                <span v-else class="material-symbols-outlined">add_task</span>
+                انضم للمقرر الآن
+              </button>
             </div>
           </div>
 
-          <!-- Module 2 (Active) -->
-          <div class="bg-bg-surface border border-primary/30 rounded-xl overflow-hidden ring-1 ring-primary/10 transition-colors duration-300">
-            <button class="w-full flex items-center justify-between p-5 bg-primary/5 hover:bg-primary/10 transition-colors cursor-pointer">
-              <div class="flex items-center gap-4">
-                <div class="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
-                  <span class="material-symbols-outlined text-primary">pending</span>
-                </div>
-                <div class="text-right">
-                  <h4 class="font-bold text-primary">الوحدة الثانية: قوى السوق (العرض والطلب)</h4>
-                  <p class="text-xs text-primary/70 mt-1">6 دروس • 2 واجب منزلي</p>
-                </div>
-              </div>
-              <span class="material-symbols-outlined text-primary">expand_less</span>
-            </button>
-            <div class="p-2 border-t border-border-base">
-              <div class="space-y-1">
-                <div class="flex items-center justify-between p-3 rounded-lg bg-primary/5 border-r-4 border-primary cursor-pointer">
-                  <div class="flex items-center gap-3">
-                    <span class="material-symbols-outlined text-primary">play_circle_filled</span>
-                    <span class="text-sm font-bold text-primary">قانون الطلب ومحدداته</span>
-                  </div>
-                  <span class="text-xs bg-primary text-white px-2 py-0.5 rounded">جاري الآن</span>
-                </div>
-                <div class="flex items-center justify-between p-3 rounded-lg hover:bg-bg-surface-hover transition-colors cursor-pointer group">
-                  <div class="flex items-center gap-3">
-                    <span class="material-symbols-outlined text-text-muted group-hover:text-primary">play_circle_outline</span>
-                    <span class="text-sm text-text-main">قانون العرض ومحدداته</span>
-                  </div>
-                  <span class="text-xs text-text-muted">15 دقيقة</span>
-                </div>
-                <div class="flex items-center justify-between p-3 rounded-lg hover:bg-bg-surface-hover transition-colors cursor-pointer group">
-                  <div class="flex items-center gap-3">
-                    <span class="material-symbols-outlined text-text-muted group-hover:text-primary">analytics</span>
-                    <span class="text-sm text-text-main">توازن السوق وأثر التغيرات</span>
-                  </div>
-                  <span class="text-xs text-text-muted">مقال</span>
-                </div>
-                <div class="flex items-center justify-between p-3 rounded-lg hover:bg-bg-surface-hover transition-colors cursor-pointer group opacity-60">
-                  <div class="flex items-center gap-3">
-                    <span class="material-symbols-outlined text-text-muted">lock</span>
-                    <span class="text-sm text-text-main">تطبيقات عملية على توازن السوق</span>
-                  </div>
-                  <span class="text-xs text-text-muted">مقفل</span>
-                </div>
-              </div>
+          <!-- Real Syllabus Iterate (When API supports it) -->
+          <template v-else>
+            <div v-for="(module, index) in course.lectures" :key="index" class="bg-bg-surface border border-border-base rounded-xl overflow-hidden transition-colors duration-300">
+              <!-- Placeholder for real modules -->
             </div>
-          </div>
-
-          <!-- Module 3 -->
-          <div class="bg-bg-surface border border-border-base rounded-xl overflow-hidden opacity-75 transition-colors duration-300">
-            <button class="w-full flex items-center justify-between p-5 hover:bg-bg-surface-hover transition-colors cursor-pointer">
-              <div class="flex items-center gap-4">
-                <div class="w-10 h-10 rounded-lg bg-bg-surface-hover flex items-center justify-center">
-                  <span class="material-symbols-outlined text-text-muted">lock</span>
-                </div>
-                <div class="text-right">
-                  <h4 class="font-bold text-text-muted">الوحدة الثالثة: مرونات الطلب والعرض</h4>
-                  <p class="text-xs text-text-muted mt-1">3 دروس • 1 مشروع بحثي</p>
-                </div>
-              </div>
-              <span class="material-symbols-outlined text-text-muted">expand_more</span>
-            </button>
-          </div>
-
-          <!-- Module 4 -->
-          <div class="bg-bg-surface border border-border-base rounded-xl overflow-hidden opacity-75 transition-colors duration-300">
-            <button class="w-full flex items-center justify-between p-5 hover:bg-bg-surface-hover transition-colors cursor-pointer">
-              <div class="flex items-center gap-4">
-                <div class="w-10 h-10 rounded-lg bg-bg-surface-hover flex items-center justify-center">
-                  <span class="material-symbols-outlined text-text-muted">lock</span>
-                </div>
-                <div class="text-right">
-                  <h4 class="font-bold text-text-muted">الوحدة الرابعة: سلوك المستهلك</h4>
-                  <p class="text-xs text-text-muted mt-1">5 دروس • اختبار منتصف الفصل</p>
-                </div>
-              </div>
-              <span class="material-symbols-outlined text-text-muted">expand_more</span>
-            </button>
-          </div>
+          </template>
         </div>
 
         <!-- Help Box -->
