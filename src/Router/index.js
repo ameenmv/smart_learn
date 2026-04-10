@@ -42,7 +42,7 @@ const router = createRouter({
           redirect: { name: 'student-dashboard' }
         },
         {
-          path: 'assignments',
+          path: 'assignments/:id?',
           name: 'student-assignments',
           component: () => import('../views/student/Assignments.vue')
         },
