@@ -3,7 +3,7 @@
     <!-- Sidebar Navigation (Right side in RTL) -->
     <aside class="w-80 bg-bg-surface border-l border-border-base flex flex-col shrink-0 transition-colors duration-300">
       <div class="p-4 border-b border-border-base">
-        <button
+        <button @click="startNewConversation"
           class="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white rounded-lg py-2.5 font-bold transition-colors cursor-pointer shadow-sm">
           <span class="material-symbols-outlined">add</span>
           <span>محادثة جديدة</span>
@@ -22,33 +22,26 @@
       <nav class="flex-1 overflow-y-auto px-2 space-y-6 no-scrollbar">
         <!-- Recent Chats Section -->
         <div>
-          <h3 class="px-3 text-[11px] font-bold text-text-muted uppercase tracking-wider mb-2">تاريخ اليوم</h3>
-          <div class="space-y-1">
-            <a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-bg-base text-primary font-medium cursor-pointer"
-              href="#">
-              <span class="material-symbols-outlined">chat_bubble</span>
-              <span class="truncate text-sm">مراجعة الرياضيات - الفصل 3</span>
-            </a>
-            <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-bg-base text-text-main cursor-pointer transition-colors"
-              href="#">
-              <span class="material-symbols-outlined">chat_bubble</span>
-              <span class="truncate text-sm">استفسار عن مشروع التخرج</span>
-            </a>
+          <h3 class="px-3 text-[11px] font-bold text-text-muted uppercase tracking-wider mb-2">المحادثات السابقة</h3>
+
+          <!-- Loading State for Conversations -->
+          <div v-if="isLoadingConversations" class="px-3 py-2 space-y-2">
+            <div class="h-9 bg-border-base/50 rounded-lg animate-pulse"></div>
+            <div class="h-9 bg-border-base/50 rounded-lg animate-pulse w-10/12"></div>
+            <div class="h-9 bg-border-base/50 rounded-lg animate-pulse w-11/12"></div>
           </div>
-        </div>
-        <div>
-          <h3 class="px-3 text-[11px] font-bold text-text-muted uppercase tracking-wider mb-2">الأسبوع الماضي</h3>
-          <div class="space-y-1">
-            <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-bg-base text-text-main cursor-pointer transition-colors"
-              href="#">
-              <span class="material-symbols-outlined">history</span>
-              <span class="truncate text-sm">تحليل البيانات الضخمة</span>
+
+          <div v-else class="space-y-1">
+            <a v-for="conv in conversations" :key="conv.id"
+               @click.prevent="selectConversation(conv.id)"
+               class="flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-colors"
+               :class="conversationId === conv.id ? 'bg-bg-base text-primary font-medium' : 'hover:bg-bg-base text-text-main'">
+              <span class="material-symbols-outlined shrink-0 text-lg">chat_bubble</span>
+              <span class="truncate text-sm">{{ conv.title || 'محادثة ذكية' }}</span>
             </a>
-            <a class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-bg-base text-text-main cursor-pointer transition-colors"
-              href="#">
-              <span class="material-symbols-outlined">history</span>
-              <span class="truncate text-sm">شرح معادلات ماكسويل</span>
-            </a>
+            <div v-if="conversations.length === 0" class="px-3 py-3 text-xs text-text-muted text-center bg-bg-base/50 rounded-lg border border-border-base/50 border-dashed">
+              لا توجد محادثات سابقة.
+            </div>
           </div>
         </div>
       </nav>
@@ -78,8 +71,25 @@
           </button>
         </div>
       </header>
+      <!-- Loading State -->
+      <div v-if="isLoading" class="flex-1 flex items-center justify-center">
+        <div class="flex flex-col items-center gap-3">
+          <span class="material-symbols-outlined animate-spin text-4xl text-primary">progress_activity</span>
+          <p class="text-sm font-medium text-text-muted">جاري تحميل المحادثة...</p>
+        </div>
+      </div>
+
       <!-- Messages Stream -->
-      <section ref="messagesContainer" class="flex-1 overflow-y-auto p-8 space-y-8 scroll-smooth no-scrollbar">
+      <section v-else ref="messagesContainer" class="flex-1 overflow-y-auto p-8 space-y-8 scroll-smooth no-scrollbar">
+        <!-- Empty State -->
+        <div v-if="messages.length === 0" class="h-full flex flex-col items-center justify-center text-center max-w-sm mx-auto">
+          <div class="size-20 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-4">
+            <span class="material-symbols-outlined text-4xl">smart_toy</span>
+          </div>
+          <h3 class="text-lg font-bold text-text-main mb-2">كيف يمكنني مساعدتك اليوم؟</h3>
+          <p class="text-sm text-text-muted leading-relaxed">أنا مساعدك الذكي الخاص بـ Smart Learn. يمكنك الاستفسار عن دروسك، طلب شروحات، أو المساعدة في الواجبات.</p>
+        </div>
+
         <div v-for="msg in messages" :key="msg.id" class="flex items-start gap-4"
           :class="msg.sender === 'user' ? 'flex-row-reverse' : ''">
           <!-- Avatar -->
@@ -227,6 +237,8 @@ const newMessage = ref('');
 const isTyping = ref(false);
 const conversationId = ref(null);
 const conversations = ref([]);
+const isLoading = ref(true);
+const isLoadingConversations = ref(true);
 
 const messages = ref([]);
 
@@ -239,22 +251,28 @@ const scrollToBottom = () => {
 };
 
 const loadConversations = async () => {
+  isLoadingConversations.value = true;
   try {
     const { data } = await chatApi.getConversations();
     conversations.value = data.data || data || [];
 
-    // Auto-load last conversation if exists
-    if (conversations.value.length > 0) {
+    if (conversations.value.length > 0 && !conversationId.value) {
       const lastConv = conversations.value[0];
       conversationId.value = lastConv.id;
       await loadMessages(lastConv.id);
+    } else if (conversations.value.length === 0) {
+      isLoading.value = false;
     }
   } catch (error) {
     console.error('[AIAssistant] Failed to load conversations:', error);
+    isLoading.value = false;
+  } finally {
+    isLoadingConversations.value = false;
   }
 };
 
 const loadMessages = async (convId) => {
+  isLoading.value = true;
   try {
     const { data } = await chatApi.getMessages(convId);
     const rawMessages = data.data || data || [];
@@ -280,9 +298,11 @@ const loadMessages = async (convId) => {
       }
       return msgs;
     });
+    isLoading.value = false;
     scrollToBottom();
   } catch (error) {
     console.error('[AIAssistant] Failed to load messages:', error);
+    isLoading.value = false;
   }
 };
 
@@ -292,9 +312,16 @@ const startNewConversation = async () => {
     const conv = data.data || data;
     conversationId.value = conv.id;
     messages.value = [];
+    await loadConversations();
   } catch (error) {
     console.error('[AIAssistant] Failed to start conversation:', error);
   }
+};
+
+const selectConversation = async (id) => {
+  if (conversationId.value === id) return;
+  conversationId.value = id;
+  await loadMessages(id);
 };
 
 const sendMessage = async () => {

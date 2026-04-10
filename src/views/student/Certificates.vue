@@ -41,37 +41,65 @@
 
     <!-- Stats -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <div class="bg-bg-surface p-6 rounded-xl border border-border-base shadow-sm flex items-center gap-4 transition-colors duration-300">
-        <div class="size-12 rounded-full bg-green-100 dark:bg-green-900/20 text-green-600 flex items-center justify-center">
-          <span class="material-symbols-outlined text-2xl">workspace_premium</span>
+      <!-- Loading Skeletons -->
+      <template v-if="isLoading">
+        <div v-for="i in 3" :key="i" class="bg-bg-surface p-6 rounded-xl border border-border-base shadow-sm flex items-center gap-4">
+          <div class="size-12 rounded-full bg-border-base/50 animate-pulse shrink-0"></div>
+          <div class="space-y-2 flex-1">
+            <div class="h-3 w-20 bg-border-base/50 rounded animate-pulse"></div>
+            <div class="h-6 w-16 bg-border-base/50 rounded animate-pulse"></div>
+          </div>
         </div>
-        <div>
-          <p class="text-text-muted text-sm font-medium">الشهادات المكتسبة</p>
-          <p class="text-2xl font-bold text-text-main">3 شهادات</p>
+      </template>
+
+      <!-- Actual Stats -->
+      <template v-else>
+        <div class="bg-bg-surface p-6 rounded-xl border border-border-base shadow-sm flex items-center gap-4 transition-colors duration-300">
+          <div class="size-12 rounded-full bg-green-100 dark:bg-green-900/20 text-green-600 flex items-center justify-center">
+            <span class="material-symbols-outlined text-2xl">workspace_premium</span>
+          </div>
+          <div>
+            <p class="text-text-muted text-sm font-medium">الشهادات المكتسبة</p>
+            <p class="text-2xl font-bold text-text-main">{{ stats.certificates }} شهادات</p>
+          </div>
         </div>
+        <div class="bg-bg-surface p-6 rounded-xl border border-border-base shadow-sm flex items-center gap-4 transition-colors duration-300">
+          <div class="size-12 rounded-full bg-blue-100 dark:bg-blue-900/20 text-primary flex items-center justify-center">
+            <span class="material-symbols-outlined text-2xl">school</span>
+          </div>
+          <div>
+            <p class="text-text-muted text-sm font-medium">الدورات المكتملة</p>
+            <p class="text-2xl font-bold text-text-main">{{ stats.completed }} دورة</p>
+          </div>
+        </div>
+        <div class="bg-bg-surface p-6 rounded-xl border border-border-base shadow-sm flex items-center gap-4 transition-colors duration-300">
+          <div class="size-12 rounded-full bg-yellow-100 dark:bg-yellow-900/20 text-yellow-600 flex items-center justify-center">
+            <span class="material-symbols-outlined text-2xl">hourglass_top</span>
+          </div>
+          <div>
+            <p class="text-text-muted text-sm font-medium">قيد التقدم</p>
+            <p class="text-2xl font-bold text-text-main">{{ stats.inProgress }} دورة</p>
+          </div>
+        </div>
+      </template>
+    </div>
+
+    <!-- Loading State -->
+    <div v-if="isLoading" class="flex justify-center items-center py-20">
+      <span class="material-symbols-outlined animate-spin text-4xl text-primary">progress_activity</span>
+    </div>
+
+    <!-- Empty State -->
+    <div v-else-if="certificates.length === 0" class="flex flex-col items-center justify-center py-20 text-center bg-bg-surface border border-border-base border-dashed rounded-xl">
+      <div class="size-20 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-4">
+        <span class="material-symbols-outlined text-4xl">workspace_premium</span>
       </div>
-      <div class="bg-bg-surface p-6 rounded-xl border border-border-base shadow-sm flex items-center gap-4 transition-colors duration-300">
-        <div class="size-12 rounded-full bg-blue-100 dark:bg-blue-900/20 text-primary flex items-center justify-center">
-          <span class="material-symbols-outlined text-2xl">school</span>
-        </div>
-        <div>
-          <p class="text-text-muted text-sm font-medium">الدورات المكتملة</p>
-          <p class="text-2xl font-bold text-text-main">4 دورات</p>
-        </div>
-      </div>
-      <div class="bg-bg-surface p-6 rounded-xl border border-border-base shadow-sm flex items-center gap-4 transition-colors duration-300">
-        <div class="size-12 rounded-full bg-yellow-100 dark:bg-yellow-900/20 text-yellow-600 flex items-center justify-center">
-          <span class="material-symbols-outlined text-2xl">hourglass_top</span>
-        </div>
-        <div>
-          <p class="text-text-muted text-sm font-medium">قيد التقدم</p>
-          <p class="text-2xl font-bold text-text-main">2 دورة</p>
-        </div>
-      </div>
+      <h3 class="text-xl font-bold text-text-main mb-2">لا توجد شهادات بعد</h3>
+      <p class="text-text-muted max-w-sm">أتمم مساقاتك التدريبية واحصل على الشهادات المعتمدة لتظهر هنا.</p>
     </div>
 
     <!-- Certificates Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       
       <div v-for="cert in certificates" :key="cert.id" class="group bg-bg-surface rounded-xl border border-border-base overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col">
         <div class="relative aspect-[4/3] bg-bg-base flex items-center justify-center p-6 overflow-hidden">
@@ -138,10 +166,17 @@
 
 <script setup>
 import { certificatesApi } from '@/api/certificates';
+import { studentApi } from '@/api/student';
 import { onMounted, reactive, ref } from 'vue';
 
 const certificates = ref([]);
 const isLoading = ref(true);
+
+const stats = reactive({
+    certificates: 0,
+    completed: 0,
+    inProgress: 0
+});
 
 const toast = reactive({
     show: false,
@@ -160,13 +195,33 @@ const showToast = (title, message, type = 'success') => {
     }, 3000);
 };
 
-const fetchCertificates = async () => {
+const fetchCertificatesAndStats = async () => {
     isLoading.value = true;
     try {
-        const { data } = await certificatesApi.getMyCertificates();
-        certificates.value = data.data || data || [];
+        // Fetch certificates
+        const { data: certData } = await certificatesApi.getMyCertificates();
+        certificates.value = certData.data || certData || [];
+        stats.certificates = certificates.value.length;
+
+        // Fetch courses for stats calculation
+        try {
+            const { data: coursesData } = await studentApi.getMyEnrolledCourses();
+            const courses = coursesData.data || coursesData || [];
+            
+            // Just simple stat logic (assumes progress property exists)
+            stats.completed = courses.filter(c => c.progress === 100 || c.is_completed).length;
+            stats.inProgress = courses.filter(c => (c.progress < 100 || c.progress === undefined) && !c.is_completed).length;
+            
+            // Fallback if no specific complete logic is returned
+            if (stats.completed === 0 && stats.inProgress === 0 && courses.length > 0) {
+               stats.inProgress = courses.length;
+            }
+        } catch (courseErr) {
+            console.error('[Certificates] Failed to load courses for stats:', courseErr);
+        }
+
     } catch (error) {
-        console.error('[Certificates] Failed to load:', error);
+        console.error('[Certificates] Failed to load certificates:', error);
         certificates.value = [];
     } finally {
         isLoading.value = false;
@@ -188,7 +243,7 @@ const shareCertificate = (cert) => {
 };
 
 onMounted(() => {
-    fetchCertificates();
+    fetchCertificatesAndStats();
 });
 </script>
 
