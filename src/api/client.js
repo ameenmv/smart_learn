@@ -8,7 +8,8 @@ import axios from 'axios'
  *   Router → store → api → client → Router  ← breaks here
  */
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'https://smart-learn-back.test/api',
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000/api',
+
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
