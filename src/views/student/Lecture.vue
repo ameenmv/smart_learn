@@ -23,13 +23,11 @@
 
     <!-- Breadcrumb -->
     <nav class="flex items-center gap-2 mb-6 text-sm flex-shrink-0">
-      <RouterLink class="text-text-muted hover:text-primary transition-colors" to="/student/courses">جامعة الملك سعود</RouterLink>
+      <RouterLink class="text-text-muted hover:text-primary transition-colors" to="/student/my-courses">مقرراتي</RouterLink>
       <span class="text-text-muted material-symbols-outlined text-base">chevron_left</span>
-      <RouterLink class="text-text-muted hover:text-primary transition-colors" to="/student/courses/101">كلية الهندسة</RouterLink>
+      <RouterLink class="text-text-muted hover:text-primary transition-colors" :to="`/student/courses/${courseId}`">{{ course?.title || 'جاري التحميل...' }}</RouterLink>
       <span class="text-text-muted material-symbols-outlined text-base">chevron_left</span>
-      <RouterLink class="text-text-muted hover:text-primary transition-colors" to="/student/courses/101">ذكاء اصطناعي 101</RouterLink>
-      <span class="text-text-muted material-symbols-outlined text-base">chevron_left</span>
-      <span class="font-semibold text-primary">المحاضرة 12: الشبكات العصبية المتقدمة</span>
+      <span class="font-semibold text-primary">{{ lecture ? lecture.title : 'جاري التحميل...' }}</span>
     </nav>
 
     <div class="flex flex-col lg:flex-row gap-6 flex-1 min-h-0">
@@ -39,43 +37,36 @@
           <div class="p-4 border-b border-border-base flex-shrink-0">
             <h3 class="font-bold text-lg mb-1 text-text-main">محتوى الدورة</h3>
             <div class="flex items-center justify-between text-xs text-text-muted">
-              <span>12 من أصل 20 درساً مكتمل</span>
-              <span class="font-bold text-primary">60%</span>
+              <span>{{ course?.completed_lectures || 0 }} من أصل {{ course?.total_lectures || 0 }} درساً مكتمل</span>
+              <span class="font-bold text-primary">{{ course?.progress || 0 }}%</span>
             </div>
             <div class="w-full bg-bg-surface-hover h-1.5 rounded-full mt-2 overflow-hidden">
-              <div class="bg-primary h-full rounded-full" style="width: 60%"></div>
+              <div class="bg-primary h-full rounded-full" :style="`width: ${course?.progress || 0}%`"></div>
             </div>
           </div>
           
-          <div class="overflow-y-auto flex-1 no-scrollbar">
-            <div class="p-2">
-              <button class="w-full flex items-center justify-between p-2 text-sm font-bold text-text-muted hover:text-text-main transition-colors cursor-pointer">
-                <span>الوحدة الثانية: أساسيات التعلم العميق</span>
-                <span class="material-symbols-outlined">expand_more</span>
-              </button>
-              <div class="space-y-1 mt-1">
-                <div class="flex items-center gap-3 p-3 rounded-lg bg-primary/10 border-r-4 border-primary cursor-pointer">
-                  <span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1">play_circle</span>
-                  <div class="flex-1">
-                    <p class="text-sm font-bold text-primary">12. الشبكات العصبية المتقدمة</p>
-                    <p class="text-[10px] text-text-muted">45:00 دقيقة</p>
-                  </div>
+          <div class="overflow-y-auto flex-1 no-scrollbar pt-2">
+            <div class="p-2 space-y-1">
+                <template v-if="course?.lectures">
+                  <RouterLink 
+                      v-for="(lec, index) in course.lectures" 
+                      :key="lec.id"
+                      :to="`/student/courses/${courseId}/lecture/${lec.id}`"
+                      class="flex items-center gap-3 p-3 rounded-lg transition-colors cursor-pointer"
+                      :class="String(lec.id) === String(lectureId) ? 'bg-primary/10 border-r-4 border-primary' : 'hover:bg-bg-surface-hover text-text-main'"
+                  >
+                    <span class="material-symbols-outlined" :class="String(lec.id) === String(lectureId) ? 'text-primary' : (lec.is_completed ? 'text-green-500' : 'text-text-muted')" style="font-variation-settings: 'FILL' 1">
+                        {{ String(lec.id) === String(lectureId) ? 'play_circle' : (lec.is_completed ? 'check_circle' : 'play_circle') }}
+                    </span>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-sm font-bold truncate" :class="String(lec.id) === String(lectureId) ? 'text-primary' : ''">{{ index + 1 }}. {{ lec.title }}</p>
+                      <p class="text-[10px] text-text-muted">{{ lec.video_duration || '0' }} دقيقة</p>
+                    </div>
+                  </RouterLink>
+                </template>
+                <div v-else class="text-center py-4 text-text-muted text-sm">
+                    جاري التحميل...
                 </div>
-                <div class="flex items-center gap-3 p-3 rounded-lg hover:bg-bg-surface-hover transition-colors cursor-pointer text-text-main">
-                  <span class="material-symbols-outlined text-green-500" style="font-variation-settings: 'FILL' 1">check_circle</span>
-                  <div class="flex-1">
-                    <p class="text-sm font-medium">11. مقدمة في خوارزميات التصنيف</p>
-                    <p class="text-[10px] text-text-muted">32:15 دقيقة</p>
-                  </div>
-                </div>
-                <div class="flex items-center gap-3 p-3 rounded-lg hover:bg-bg-surface-hover transition-colors cursor-pointer opacity-70 text-text-main">
-                  <span class="material-symbols-outlined text-text-muted">lock</span>
-                  <div class="flex-1">
-                    <p class="text-sm font-medium text-text-muted">13. تحسين النماذج والضبط</p>
-                    <p class="text-[10px] text-text-muted">55:00 دقيقة</p>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
           
@@ -90,68 +81,59 @@
       <!-- Main Content -->
       <div class="flex-1 min-w-0 overflow-y-auto no-scrollbar pr-1">
         <!-- Video Player -->
-        <div class="bg-black rounded-xl overflow-hidden shadow-2xl relative group">
-          <div class="aspect-video relative bg-cover bg-center" data-alt="فيديو تعليمي عن الشبكات العصبية" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBOk22wfLib23OIsywlvMWCIWESjUgQYeJzMBdrS-EmwH9aQTQ2lFVt57acY1E8VRVeA6Nx9edRnjrfzfOlQoIqdHyVCKoqIJXM4zOHcJae67ILJbxnC1fqNbVRM7Gya--SWNwDeWPIw6LnUWQFZgrDkqv6rCTJQhbkXSIq7rD3xnH5qbXC_9GQ8OtpZ0ldBf2XnZzhhUAdiZi7hqJaTcWqZ-pW2kQ2SPeY7gVQ9LgbgjMCLqLsPxYKC0r95Cl5Dgy0gz6Q2dXxTy0f");'>
-            <div class="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/30 transition-colors">
-              <button class="size-20 rounded-full bg-primary/90 text-white flex items-center justify-center hover:scale-110 transition-transform cursor-pointer shadow-xl">
-                <span class="material-symbols-outlined !text-4xl" style="font-variation-settings: 'FILL' 1">play_arrow</span>
-              </button>
-            </div>
-            <div class="absolute bottom-0 inset-x-0 p-4 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <div class="flex items-center gap-4 mb-2">
-                <div class="h-1 flex-1 bg-white/30 rounded-full relative cursor-pointer">
-                  <div class="absolute inset-y-0 right-0 bg-primary rounded-full" style="width: 35%"></div>
-                  <div class="absolute right-[35%] top-1/2 -translate-y-1/2 size-3 bg-white rounded-full shadow-lg hover:scale-125 transition-transform"></div>
-                </div>
-              </div>
-              <div class="flex items-center justify-between text-white">
-                <div class="flex items-center gap-4">
-                  <span class="material-symbols-outlined cursor-pointer hover:text-primary transition-colors">play_arrow</span>
-                  <span class="material-symbols-outlined cursor-pointer hover:text-primary transition-colors">skip_next</span>
-                  <span class="material-symbols-outlined cursor-pointer hover:text-primary transition-colors">volume_up</span>
-                  <span class="text-xs font-medium">15:40 / 45:00</span>
-                </div>
-                <div class="flex items-center gap-4">
-                  <span class="text-xs bg-white/20 px-2 py-0.5 rounded cursor-pointer hover:bg-white/30 transition-colors">1.25x</span>
-                  <span class="material-symbols-outlined cursor-pointer hover:text-primary transition-colors">subtitles</span>
-                  <span class="material-symbols-outlined cursor-pointer hover:text-primary transition-colors">settings</span>
-                  <span class="material-symbols-outlined cursor-pointer hover:text-primary transition-colors">fullscreen</span>
-                </div>
-              </div>
-            </div>
+        <div class="bg-black rounded-xl overflow-hidden shadow-2xl relative group min-h-[200px] flex justify-center items-center">
+          <div v-if="isLoading" class="absolute inset-0 flex items-center justify-center bg-black/50 z-10">
+            <span class="size-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></span>
+          </div>
+
+          <template v-if="lecture?.video?.url">
+             <iframe v-if="lecture.video.url.includes('youtube') || lecture.video.url.includes('youtu.be')" 
+                 :src="lecture.video.url.includes('watch?v=') ? lecture.video.url.replace('watch?v=', 'embed/') : lecture.video.url.replace('youtu.be/', 'youtube.com/embed/')" 
+                 class="w-full aspect-video" 
+                 frameborder="0" 
+                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                 allowfullscreen>
+             </iframe>
+             <video v-else :src="lecture.video.url" controls class="w-full aspect-video"></video>
+          </template>
+          <div v-else class="aspect-video relative bg-bg-surface-hover w-full flex items-center justify-center">
+            <span class="text-text-muted">لا يوجد فيديو</span>
           </div>
         </div>
 
         <!-- Info & Actions -->
         <div class="mt-6 flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <h1 class="text-2xl lg:text-3xl font-bold mb-2 text-text-main">المحاضرة 12: الشبكات العصبية المتقدمة</h1>
-            <div class="flex items-center gap-4 text-text-muted text-sm">
+          <div class="flex-1">
+            <h1 class="text-2xl lg:text-3xl font-bold mb-2 text-text-main">{{ lecture?.title }}</h1>
+            <div class="flex items-center gap-4 text-text-muted text-sm flex-wrap">
               <div class="flex items-center gap-1">
                 <span class="material-symbols-outlined text-sm">person</span>
-                <span>د. أحمد الفارسي</span>
+                <span>{{ lecture?.instructor?.name || 'المدرب' }}</span>
               </div>
               <span>•</span>
               <div class="flex items-center gap-1">
                 <span class="material-symbols-outlined text-sm">schedule</span>
-                <span>45 دقيقة</span>
-              </div>
-              <span>•</span>
-              <div class="flex items-center gap-1 text-yellow-500">
-                <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1">star</span>
-                <span>4.9 (240 تقييم)</span>
+                <span>{{ lecture?.video?.duration || 0 }} دقيقة</span>
               </div>
             </div>
+            <p v-if="lecture?.description" class="text-sm text-text-muted mt-3 mb-2 max-w-3xl leading-relaxed">{{ lecture.description }}</p>
           </div>
-          <div class="flex gap-2">
-            <button class="flex items-center gap-2 px-4 py-2 rounded-lg bg-bg-surface-hover text-text-main text-sm font-medium hover:bg-border-base transition-colors cursor-pointer border border-border-base">
+          <div class="flex gap-2 shrink-0">
+            <a v-if="lecture?.attachment" :href="lecture.attachment" target="_blank" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-bg-surface-hover text-text-main text-sm font-medium hover:bg-border-base transition-colors cursor-pointer border border-border-base">
               <span class="material-symbols-outlined">download</span>
               الملخص
+            </a>
+            <button v-else disabled class="flex items-center gap-2 px-4 py-2 rounded-lg bg-bg-surface text-text-muted text-sm font-medium border border-border-base opacity-50 cursor-not-allowed">
+              <span class="material-symbols-outlined">download</span>
+              لا يوجد ملخص
             </button>
-            <button @click="markComplete" :disabled="isCompleting" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors cursor-pointer shadow-sm disabled:opacity-70 disabled:cursor-not-allowed">
+
+            <button @click="markComplete" :disabled="isCompleting || lecture?.student_progress?.is_completed" 
+                    class="flex items-center gap-2 px-4 py-2 rounded-lg text-white text-sm font-bold transition-colors shadow-sm disabled:opacity-70 disabled:cursor-not-allowed"
+                    :class="lecture?.student_progress?.is_completed ? 'bg-green-500 hover:bg-green-600' : 'bg-primary hover:bg-primary/90 cursor-pointer'">
               <span v-if="isCompleting" class="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-              <span v-else class="material-symbols-outlined">check</span>
-              <span>{{ isCompleting ? 'جاري التحديث...' : 'تحديد كمكتمل' }}</span>
+              <span v-else class="material-symbols-outlined">{{ lecture?.student_progress?.is_completed ? 'done_all' : 'check' }}</span>
+              <span>{{ isCompleting ? 'جاري التحديث...' : (lecture?.student_progress?.is_completed ? 'مكتمل' : 'تحديد كمكتمل') }}</span>
             </button>
           </div>
         </div>
@@ -180,16 +162,22 @@
               <h4 class="font-bold text-text-main">مفكرة الطالب</h4>
               <span class="text-xs text-text-muted">تم الحفظ تلقائياً: 12:30 م</span>
             </div>
-            <textarea class="w-full min-h-[200px] border-none bg-bg-surface-hover rounded-lg p-4 text-sm focus:ring-1 focus:ring-primary mb-4 text-text-main placeholder:text-text-muted outline-none transition-colors" placeholder="اكتب ملاحظاتك هنا... سيتم ربط الملاحظة بالوقت الحالي للفيديو"></textarea>
-            <div class="space-y-4">
-              <div class="flex items-start gap-3 p-3 bg-bg-base rounded-lg border-r-4 border-primary/40 transition-colors">
-                <span class="text-xs font-bold text-primary bg-primary/10 px-2 py-1 rounded cursor-pointer hover:bg-primary/20">10:24</span>
-                <p class="text-sm text-text-main">شرح مفهوم الانتشار العكسي (Backpropagation) بشكل رائع، يجب مراجعة المعادلة الرياضية.</p>
+            <textarea v-model="noteContent" :disabled="isSavingNote" class="w-full min-h-[150px] border-none bg-bg-surface-hover rounded-lg p-4 text-sm focus:ring-1 focus:ring-primary mb-4 text-text-main placeholder:text-text-muted outline-none transition-colors disabled:opacity-50" placeholder="اكتب ملاحظاتك هنا... سيتم ربط الملاحظة بالوقت الحالي للفيديو"></textarea>
+            <div class="flex justify-end mb-6">
+                <button @click="saveNote" :disabled="!noteContent.trim() || isSavingNote" class="flex items-center gap-2 px-6 py-2 rounded-lg bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+                    <span v-if="isSavingNote" class="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                    <span>{{ isSavingNote ? 'جاري الحفظ...' : 'حفظ الملاحظة' }}</span>
+                </button>
+            </div>
+            
+            <div class="space-y-4" v-if="lecture?.notes?.length > 0">
+              <div v-for="note in lecture.notes" :key="note.id" class="flex items-start gap-3 p-3 bg-bg-base rounded-lg border-r-4 border-primary/40 transition-colors">
+                <span class="text-xs font-bold text-primary bg-primary/10 px-2 py-1 rounded cursor-pointer hover:bg-primary/20">{{ note.timestamp_seconds ? formatTime(note.timestamp_seconds) : '0:00' }}</span>
+                <p class="text-sm text-text-main">{{ note.content }}</p>
               </div>
-              <div class="flex items-start gap-3 p-3 bg-bg-base rounded-lg border-r-4 border-primary/40 transition-colors">
-                <span class="text-xs font-bold text-primary bg-primary/10 px-2 py-1 rounded cursor-pointer hover:bg-primary/20">15:10</span>
-                <p class="text-sm text-text-main">الفرق الأساسي بين RNN و CNN في معالجة البيانات المتسلسلة.</p>
-              </div>
+            </div>
+            <div v-else class="text-center py-8 text-text-muted text-sm">
+                لا توجد ملاحظات لهذه المحاضرة بعد.
             </div>
           </div>
         </div>
@@ -210,13 +198,14 @@
 
 <script setup>
 import { studentApi } from '@/api/student';
-import { onMounted, reactive, ref } from 'vue';
+import { onMounted, reactive, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 const route = useRoute();
 const courseId = route.params.courseId;
-const lectureId = route.params.lectureId;
+const lectureId = ref(route.params.lectureId);
 
+const course = ref(null);
 const lecture = ref(null);
 const isLoading = ref(true);
 const isCompleting = ref(false);
@@ -240,10 +229,19 @@ const showToast = (title, message, type = 'success') => {
     }, 3000);
 };
 
-const fetchLecture = async () => {
+const fetchCourse = async () => {
+    try {
+        const { data } = await studentApi.getCourseDetails(courseId);
+        course.value = data.data || data;
+    } catch (error) {
+        console.error('[Course] Failed to load:', error);
+    }
+};
+
+const fetchLecture = async (idToFetch = lectureId.value) => {
     isLoading.value = true;
     try {
-        const { data } = await studentApi.getLecture(courseId, lectureId);
+        const { data } = await studentApi.getLecture(courseId, idToFetch);
         lecture.value = data.data || data;
     } catch (error) {
         console.error('[Lecture] Failed to load:', error);
@@ -253,20 +251,47 @@ const fetchLecture = async () => {
     }
 };
 
+watch(() => route.params.lectureId, (newId) => {
+    if (newId && newId !== lectureId.value) {
+        lectureId.value = newId;
+        fetchLecture(newId);
+    }
+});
+
 const markComplete = () => {
+    if (lecture.value?.student_progress?.is_completed) return;
+    
     isCompleting.value = true;
     // No dedicated API endpoint for mark-complete yet
     setTimeout(() => {
         isCompleting.value = false;
+        if (lecture.value && lecture.value.student_progress) {
+             lecture.value.student_progress.is_completed = true;
+        } else if (lecture.value) {
+             lecture.value.student_progress = { is_completed: true };
+        }
         showToast('أحسنت!', 'تم تحديد المحاضرة كمكتملة');
     }, 1000);
+};
+
+const formatTime = (seconds) => {
+    if (!seconds) return '0:00';
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    return `${m}:${s.toString().padStart(2, '0')}`;
 };
 
 const saveNote = async () => {
     if (!noteContent.value.trim()) return;
     isSavingNote.value = true;
     try {
-        await studentApi.addLectureNote(lectureId, { content: noteContent.value.trim() });
+        const { data } = await studentApi.addLectureNote(lectureId, { content: noteContent.value.trim(), timestamp_seconds: 0 });
+        
+        if (lecture.value) {
+            if (!lecture.value.notes) lecture.value.notes = [];
+            lecture.value.notes.unshift(data.data);
+        }
+        
         showToast('تم الحفظ', 'تم حفظ الملاحظة بنجاح');
         noteContent.value = '';
     } catch (error) {
@@ -278,6 +303,7 @@ const saveNote = async () => {
 };
 
 onMounted(() => {
+    fetchCourse();
     fetchLecture();
 });
 </script>
