@@ -109,7 +109,7 @@
                 type="file" 
                 ref="fileInput" 
                 class="hidden" 
-                accept="video/mp4,video/x-m4v,video/*" 
+                accept="video/mp4,video/webm,video/quicktime,video/x-matroska,video/x-m4v,video/*" 
                 @change="handleFileSelect"
               />
               <div 
@@ -119,7 +119,7 @@
                 <span class="material-symbols-outlined text-4xl text-primary">cloud_upload</span>
               </div>
               <h3 class="text-2xl font-black mb-2 text-text-main">قم برفع فيديو المحاضرة</h3>
-              <p class="text-text-muted mb-8">اسحب وأفلت الملف هنا أو انقر لاختيار ملف من جهازك. يدعم MP4, MKV, MOV بحد أقصى 2 جيجابايت.</p>
+              <p class="text-text-muted mb-8">اسحب وأفلت الملف هنا أو انقر لاختيار ملف من جهازك. يدعم MP4, MKV, MOV, WebM بحد أقصى 2 جيجابايت.</p>
             </div>
 
             <div v-else class="max-w-md mx-auto">
