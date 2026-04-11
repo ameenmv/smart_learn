@@ -115,7 +115,112 @@
             </div>
 
             <div class="absolute -z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gradient-to-br from-primary/10 via-transparent to-blue-400/10 rounded-full blur-3xl"></div>
-            <div class="w-full aspect-[4/3] bg-center bg-no-repeat bg-cover rounded-3xl shadow-2xl border border-border-base/30 overflow-hidden hover:scale-[1.01] transition-transform duration-500 ring-1 ring-black/5" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAdd3wSMSNTISrNOkFaxv9QgzEMqAboq3u3Tt44ieG_bowGo4vwfB9CfkCZ8jkA3G5gsex5JpRrXpIB8p0kZk-j6NzYAXkr2smCveDG8HJGqG7ZGDlvvON2ZPOKIz0ht6g-b7LqsPIe393WkwD3K-keVPkkLZTwxpWrBr7tpUI7ntingdw3M2FSctL8wUKDwqooEhjq3_rRaEjOGFDIfL4cfrpIPJs-hFG93oqxNpOtwN1Gz3FNzbFujzLGmFLZd0MdoGQQw-wnTqtV");'>
+            
+            <!-- Dashboard Mockup -->
+            <div class="w-full rounded-3xl shadow-2xl border border-border-base/50 overflow-hidden bg-bg-surface ring-1 ring-black/5 hover:shadow-[0_30px_80px_-10px_rgba(19,91,236,0.15)] transition-all duration-700">
+              <!-- Browser Chrome -->
+              <div class="flex items-center gap-2 px-5 py-3 bg-bg-surface-hover/60 border-b border-border-base/50">
+                <div class="flex gap-2">
+                  <div class="w-3 h-3 rounded-full bg-red-400/80"></div>
+                  <div class="w-3 h-3 rounded-full bg-amber-400/80"></div>
+                  <div class="w-3 h-3 rounded-full bg-green-400/80"></div>
+                </div>
+                <div class="flex-1 mx-4">
+                  <div class="bg-bg-base rounded-lg px-4 py-1.5 text-xs text-text-muted flex items-center gap-2 max-w-xs mx-auto border border-border-base/50">
+                    <span class="material-symbols-outlined text-xs text-green-500">lock</span>
+                    smart-learn.app/dashboard
+                  </div>
+                </div>
+              </div>
+              <!-- Dashboard Content -->
+              <div class="p-5 space-y-4">
+                <!-- Welcome Bar -->
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-primary flex items-center justify-center text-white">
+                      <span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1">school</span>
+                    </div>
+                    <div>
+                      <p class="text-sm font-bold text-text-main">مرحباً، أحمد👋</p>
+                      <p class="text-[10px] text-text-muted">لديك 3 مقررات نشطة</p>
+                    </div>
+                  </div>
+                  <div class="flex gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-bg-base flex items-center justify-center">
+                      <span class="material-symbols-outlined text-text-muted text-sm">notifications</span>
+                    </div>
+                    <div class="w-8 h-8 rounded-lg bg-bg-base flex items-center justify-center">
+                      <span class="material-symbols-outlined text-text-muted text-sm">smart_toy</span>
+                    </div>
+                  </div>
+                </div>
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-4 gap-3">
+                  <div class="bg-bg-base rounded-xl p-3 flex flex-col gap-1.5 border border-border-base/30">
+                    <span class="material-symbols-outlined text-primary text-lg" style="font-variation-settings: 'FILL' 1">library_books</span>
+                    <span class="text-lg font-black text-text-main leading-none">3</span>
+                    <span class="text-[9px] text-text-muted">مقررات</span>
+                  </div>
+                  <div class="bg-bg-base rounded-xl p-3 flex flex-col gap-1.5 border border-border-base/30">
+                    <span class="material-symbols-outlined text-emerald-500 text-lg" style="font-variation-settings: 'FILL' 1">task_alt</span>
+                    <span class="text-lg font-black text-text-main leading-none">12</span>
+                    <span class="text-[9px] text-text-muted">محاضرة</span>
+                  </div>
+                  <div class="bg-bg-base rounded-xl p-3 flex flex-col gap-1.5 border border-border-base/30">
+                    <span class="material-symbols-outlined text-amber-500 text-lg" style="font-variation-settings: 'FILL' 1">quiz</span>
+                    <span class="text-lg font-black text-text-main leading-none">5</span>
+                    <span class="text-[9px] text-text-muted">اختبارات</span>
+                  </div>
+                  <div class="bg-bg-base rounded-xl p-3 flex flex-col gap-1.5 border border-border-base/30">
+                    <span class="material-symbols-outlined text-purple-500 text-lg" style="font-variation-settings: 'FILL' 1">workspace_premium</span>
+                    <span class="text-lg font-black text-text-main leading-none">2</span>
+                    <span class="text-[9px] text-text-muted">شهادات</span>
+                  </div>
+                </div>
+                <!-- Course Cards -->
+                <div class="grid grid-cols-2 gap-3">
+                  <div class="bg-bg-base rounded-xl p-3 border border-border-base/30">
+                    <div class="h-16 rounded-lg bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center mb-2.5">
+                      <span class="material-symbols-outlined text-primary/40 text-2xl">code</span>
+                    </div>
+                    <p class="text-xs font-bold text-text-main truncate">هياكل البيانات</p>
+                    <p class="text-[9px] text-text-muted mt-0.5">د. أحمد • علوم حاسب</p>
+                    <div class="mt-2 flex items-center gap-2">
+                      <div class="flex-1 h-1.5 bg-border-base/50 rounded-full overflow-hidden">
+                        <div class="h-full bg-primary rounded-full" style="width: 72%"></div>
+                      </div>
+                      <span class="text-[9px] text-primary font-bold">72%</span>
+                    </div>
+                  </div>
+                  <div class="bg-bg-base rounded-xl p-3 border border-border-base/30">
+                    <div class="h-16 rounded-lg bg-gradient-to-br from-emerald-500/20 to-emerald-500/5 flex items-center justify-center mb-2.5">
+                      <span class="material-symbols-outlined text-emerald-500/40 text-2xl">psychology</span>
+                    </div>
+                    <p class="text-xs font-bold text-text-main truncate">الذكاء الاصطناعي</p>
+                    <p class="text-[9px] text-text-muted mt-0.5">د. سارة • نظم معلومات</p>
+                    <div class="mt-2 flex items-center gap-2">
+                      <div class="flex-1 h-1.5 bg-border-base/50 rounded-full overflow-hidden">
+                        <div class="h-full bg-emerald-500 rounded-full" style="width: 45%"></div>
+                      </div>
+                      <span class="text-[9px] text-emerald-500 font-bold">45%</span>
+                    </div>
+                  </div>
+                </div>
+                <!-- AI Chat Preview -->
+                <div class="bg-bg-base rounded-xl p-3 border border-border-base/30 flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                    <span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1">smart_toy</span>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-[10px] font-bold text-text-main">المساعد الذكي AI</p>
+                    <p class="text-[9px] text-text-muted truncate">اسألني أي سؤال عن مقرراتك الدراسية...</p>
+                  </div>
+                  <div class="flex gap-1">
+                    <div class="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></div>
+                    <span class="text-[8px] text-green-500 font-bold">متصل</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
