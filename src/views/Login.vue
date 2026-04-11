@@ -71,32 +71,32 @@
                     </div>
                     <div class="mb-8">
                         <p class="text-sm font-bold text-text-main mb-4 text-right">أنا أسجل دخولي كـ:</p>
-                        <div class="flex gap-4 p-1 bg-bg-base rounded-xl border border-border-base lg:min-w-[520px] lg:flex-row flex-col">
+                        <div class="flex w-full p-1 bg-bg-base rounded-xl border border-border-base">
                             <label class="flex-1 cursor-pointer group">
                                 <input v-model="form.role" class="hidden peer" name="role" type="radio"
                                     value="student" />
                                 <div
-                                    class="flex items-center justify-center gap-2 py-3 px-4 rounded-lg bg-transparent text-text-muted peer-checked:bg-bg-surface peer-checked:text-primary peer-checked:shadow-sm transition-all duration-200">
-                                    <span class="material-symbols-outlined text-xl">person</span>
-                                    <span class="font-bold">طالب</span>
+                                    class="flex items-center justify-center gap-1 md:gap-2 py-2 md:py-3 px-1 md:px-4 rounded-lg bg-transparent text-text-muted peer-checked:bg-bg-surface peer-checked:text-primary peer-checked:shadow-sm transition-all duration-200">
+                                    <span class="material-symbols-outlined text-lg md:text-xl hidden md:block">person</span>
+                                    <span class="font-bold text-xs md:text-sm">طالب</span>
                                 </div>
                             </label>
                             <label class="flex-1 cursor-pointer group">
                                 <input v-model="form.role" class="hidden peer" name="role" type="radio"
-                                    value="student" />
+                                    value="university_student" />
                                 <div
-                                    class="flex items-center justify-center gap-2 py-3 px-4 rounded-lg bg-transparent text-text-muted peer-checked:bg-bg-surface peer-checked:text-primary peer-checked:shadow-sm transition-all duration-200">
-                                    <span class="material-symbols-outlined text-xl">person</span>
-                                    <span class="font-bold">طالب جامعي</span>
+                                    class="flex items-center justify-center gap-1 md:gap-2 py-2 md:py-3 px-1 md:px-4 rounded-lg bg-transparent text-text-muted peer-checked:bg-bg-surface peer-checked:text-primary peer-checked:shadow-sm transition-all duration-200">
+                                    <span class="material-symbols-outlined text-lg md:text-xl hidden md:block">school</span>
+                                    <span class="font-bold text-xs md:text-sm">طالب جامعي</span>
                                 </div>
                             </label>
                             <label class="flex-1 cursor-pointer group">
                                 <input v-model="form.role" class="hidden peer" name="role" type="radio"
                                     value="instructor" />
                                 <div
-                                    class="flex items-center justify-center gap-2 py-3 px-4 rounded-lg bg-transparent text-text-muted peer-checked:bg-bg-surface peer-checked:text-primary peer-checked:shadow-sm transition-all duration-200">
-                                    <span class="material-symbols-outlined text-xl">school</span>
-                                    <span class="font-bold">محاضر</span>
+                                    class="flex items-center justify-center gap-1 md:gap-2 py-2 md:py-3 px-1 md:px-4 rounded-lg bg-transparent text-text-muted peer-checked:bg-bg-surface peer-checked:text-primary peer-checked:shadow-sm transition-all duration-200">
+                                    <span class="material-symbols-outlined text-lg md:text-xl hidden md:block">history_edu</span>
+                                    <span class="font-bold text-xs md:text-sm">محاضر</span>
                                 </div>
                             </label>
                         </div>
@@ -207,10 +207,11 @@ const handleLogin = async () => {
 
     isLoading.value = true
     try {
+        const apiRole = form.role === 'university_student' ? 'student' : form.role
         await authStore.login({
             email: form.username.trim(),
             password: form.password,
-            role: form.role,
+            role: apiRole,
         })
 
         console.log('[Login] isAuthenticated:', authStore.isAuthenticated)
