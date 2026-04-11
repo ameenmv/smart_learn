@@ -161,6 +161,56 @@
                   </div>
                </div>
             </div>
+
+            <!-- Lectures List Section -->
+            <div
+               class="bg-bg-surface p-6 rounded-2xl border border-border-base shadow-sm transition-colors duration-300 mt-6">
+               <div class="flex items-center justify-between mb-6">
+                  <div class="flex items-center gap-3">
+                     <div class="size-10 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center">
+                        <span class="material-symbols-outlined">video_library</span>
+                     </div>
+                     <h3 class="text-lg font-black text-text-main">محاضرات الدورة</h3>
+                  </div>
+                  <RouterLink :to="`/instructor/lectures?courseId=${route.params.id}`"
+                     class="bg-primary/10 text-primary px-4 py-2 rounded-xl font-bold text-sm hover:bg-primary/20 transition-colors flex items-center gap-2 border border-primary/20">
+                     <span class="material-symbols-outlined text-sm">add</span>
+                     إضافة محاضرة
+                  </RouterLink>
+               </div>
+               
+               <!-- Empty State -->
+               <div v-if="!lectures || lectures.length === 0" class="flex flex-col items-center justify-center py-8 text-center bg-bg-base/30 rounded-xl border-2 border-dashed border-border-base">
+                  <span class="material-symbols-outlined text-5xl text-text-muted/30 mb-3">movie</span>
+                  <p class="text-text-main font-bold text-sm mb-1">لا توجد محاضرات في هذا المقرر حتى الآن.</p>
+                  <p class="text-xs text-text-muted">اضغط على إضافة محاضرة للبدء ببناء محتوى الدورة.</p>
+               </div>
+
+               <!-- List -->
+               <div v-else class="space-y-3">
+                  <div v-for="lec in lectures" :key="lec.id" class="p-4 bg-bg-base/50 rounded-xl border border-border-base flex items-center justify-between group hover:border-primary/30 transition-colors">
+                     <div class="flex items-center gap-4">
+                        <div class="size-10 rounded-xl bg-bg-surface border border-border-base flex items-center justify-center font-black text-text-main text-sm shadow-sm">{{ lec.order }}</div>
+                        <div>
+                           <p class="font-bold text-text-main text-sm">{{ lec.title }}</p>
+                           <div class="flex items-center gap-2 mt-1">
+                              <span class="text-xs text-text-muted flex items-center gap-1">
+                                 <span class="material-symbols-outlined text-[14px]">schedule</span>
+                                 {{ lec.video_duration || '--:--' }}
+                              </span>
+                              <span class="text-text-muted/30 text-xs">•</span>
+                              <span class="text-xs font-bold" :class="lec.status === 'active' ? 'text-emerald-500' : 'text-amber-500'">
+                                 {{ lec.status === 'active' ? 'مفعلة' : 'مسودة' }}
+                              </span>
+                           </div>
+                        </div>
+                     </div>
+                     <button class="p-2 text-text-muted hover:text-primary hover:bg-primary/10 rounded-lg transition-colors cursor-pointer" title="تعديل">
+                        <span class="material-symbols-outlined text-lg">edit</span>
+                     </button>
+                  </div>
+               </div>
+            </div>
          </div>
       </div>
    </div>
@@ -182,6 +232,7 @@ const isLoading = ref(true)
 const loadError = ref('')
 const isSubmitting = ref(false)
 const generalError = ref('')
+const lectures = ref([])
 
 const form = reactive({
    title: '',
@@ -204,6 +255,7 @@ async function fetchCourse() {
       form.level = course.level
       form.code = course.code
       form.status = course.status
+      lectures.value = course.lectures || []
    } catch (e) {
       loadError.value = e.response?.data?.message || 'حدث خطأ في تحميل بيانات الدورة'
    } finally {
