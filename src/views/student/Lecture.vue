@@ -87,8 +87,8 @@
           </div>
 
           <template v-if="lecture?.video?.url">
-             <iframe v-if="lecture.video.url.includes('youtube') || lecture.video.url.includes('youtu.be')" 
-                 :src="lecture.video.url.includes('watch?v=') ? lecture.video.url.replace('watch?v=', 'embed/') : lecture.video.url.replace('youtu.be/', 'youtube.com/embed/')" 
+             <iframe v-if="isYouTube(lecture.video.url)" 
+                 :src="getEmbedUrl(lecture.video.url)" 
                  class="w-full aspect-video" 
                  frameborder="0" 
                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
@@ -249,6 +249,34 @@ const fetchLecture = async (idToFetch = lectureId.value) => {
     } finally {
         isLoading.value = false;
     }
+};
+
+const isYouTube = (url) => {
+    if (!url) return false;
+    return url.includes('youtube.com') || url.includes('youtu.be');
+};
+
+const getEmbedUrl = (url) => {
+    if (!url) return '';
+    if (isYouTube(url)) {
+        let videoId = '';
+        try {
+            const urlObj = new URL(url);
+            if (urlObj.hostname.includes('youtube.com')) {
+                videoId = urlObj.searchParams.get('v');
+            } else if (urlObj.hostname.includes('youtu.be')) {
+                videoId = urlObj.pathname.slice(1);
+            }
+        } catch (e) {
+            const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/);
+            if (match && match[1]) videoId = match[1];
+        }
+        
+        if (videoId) {
+            return `https://www.youtube.com/embed/${videoId}`;
+        }
+    }
+    return url;
 };
 
 watch(() => route.params.lectureId, (newId) => {
