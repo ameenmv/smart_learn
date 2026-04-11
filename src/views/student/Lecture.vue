@@ -87,14 +87,15 @@
           </div>
 
           <template v-if="lecture?.video?.url">
-             <iframe v-if="isYouTube(lecture.video.url)" 
+             <iframe v-if="isYouTube(lecture.video.url)"
+                 @load="initYoutubeListener"
                  :src="getEmbedUrl(lecture.video.url)" 
                  class="w-full aspect-video" 
                  frameborder="0" 
                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                  allowfullscreen>
              </iframe>
-             <video v-else :src="lecture.video.url" controls class="w-full aspect-video"></video>
+             <video v-else ref="videoPlayer" @timeupdate="currentVideoTime = $event.target.currentTime" :src="lecture.video.url" controls class="w-full aspect-video"></video>
           </template>
           <div v-else class="aspect-video relative bg-bg-surface-hover w-full flex items-center justify-center">
             <span class="text-text-muted">لا يوجد فيديو</span>
@@ -198,7 +199,7 @@
 
 <script setup>
 import { studentApi } from '@/api/student';
-import { onMounted, reactive, ref, watch } from 'vue';
+import { onMounted, reactive, ref, watch, onUnmounted } from 'vue';
 import { useRoute } from 'vue-router';
 
 const route = useRoute();
@@ -211,6 +212,8 @@ const isLoading = ref(true);
 const isCompleting = ref(false);
 const noteContent = ref('');
 const isSavingNote = ref(false);
+const currentVideoTime = ref(0);
+const videoPlayer = ref(null);
 
 const toast = reactive({
     show: false,
@@ -273,10 +276,26 @@ const getEmbedUrl = (url) => {
         }
         
         if (videoId) {
-            return `https://www.youtube.com/embed/${videoId}`;
+            return `https://www.youtube.com/embed/${videoId}?enablejsapi=1`;
         }
     }
     return url;
+};
+
+const initYoutubeListener = (e) => {
+    if (e.target.contentWindow) {
+        e.target.contentWindow.postMessage('{"event":"listening","id":1}', '*');
+    }
+};
+
+const handleYoutubeMessage = (event) => {
+    if (event.origin !== 'https://www.youtube.com') return;
+    try {
+        const data = JSON.parse(event.data);
+        if (data.event === 'infoDelivery' && data.info && data.info.currentTime !== undefined) {
+            currentVideoTime.value = data.info.currentTime;
+        }
+    } catch(e) {}
 };
 
 watch(() => route.params.lectureId, (newId) => {
@@ -313,7 +332,8 @@ const saveNote = async () => {
     if (!noteContent.value.trim()) return;
     isSavingNote.value = true;
     try {
-        const { data } = await studentApi.addLectureNote(lectureId, { content: noteContent.value.trim(), timestamp_seconds: 0 });
+        const timeToSave = Math.floor(currentVideoTime.value);
+        const { data } = await studentApi.addLectureNote(lectureId.value, { content: noteContent.value.trim(), timestamp_seconds: timeToSave });
         
         if (lecture.value) {
             if (!lecture.value.notes) lecture.value.notes = [];
@@ -333,6 +353,11 @@ const saveNote = async () => {
 onMounted(() => {
     fetchCourse();
     fetchLecture();
+    window.addEventListener('message', handleYoutubeMessage);
+});
+
+onUnmounted(() => {
+    window.removeEventListener('message', handleYoutubeMessage);
 });
 </script>
 
