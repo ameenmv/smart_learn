@@ -88,6 +88,20 @@
             <h3 class="text-lg font-black text-text-main">بيانات المحاضرة</h3>
           </div>
           <div class="grid grid-cols-1 gap-6">
+            <!-- Course Selection -->
+            <div>
+              <label class="block text-sm font-bold mb-2 text-text-main">المقرر الدراسي <span
+                  class="text-red-500">*</span></label>
+              <div class="relative">
+                <select v-model="selectedCourseId"
+                  class="w-full h-12 px-4 pl-10 rounded-xl border border-border-base bg-bg-surface text-text-main focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all appearance-none cursor-pointer">
+                  <option :value="null" disabled>اختر المقرر الدراسي...</option>
+                  <option v-for="c in userCourses" :key="c.id" :value="c.id">{{ c.title }}</option>
+                </select>
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none">expand_more</span>
+              </div>
+            </div>
+
             <div>
               <label class="block text-sm font-bold mb-2 text-text-main">عنوان المحاضرة <span
                   class="text-red-500">*</span></label>
@@ -405,17 +419,17 @@ const certTemplateFile = ref(null);
 const isCertDragging = ref(false);
 
 // ── Auto-select Course ──────────────────────────────────────────────
+const userCourses = ref([]);
 
 onMounted(async () => {
-  if (route.query.courseId) {
-    selectedCourseId.value = Number(route.query.courseId);
-    return;
-  }
   try {
     const { data } = await coursesApi.getMyCourses();
-    const courses = data.data || [];
-    if (courses.length > 0) {
-      selectedCourseId.value = courses[0].id;
+    userCourses.value = data.data || [];
+    
+    if (route.query.courseId) {
+      selectedCourseId.value = Number(route.query.courseId);
+    } else if (userCourses.value.length > 0) {
+      selectedCourseId.value = userCourses.value[0].id;
     }
   } catch (e) {
     console.error('Failed to fetch courses:', e);
