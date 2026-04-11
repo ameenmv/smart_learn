@@ -1,7 +1,13 @@
 <template>
-  <div class="flex h-[calc(100vh-64px)] overflow-hidden font-display -m-8">
+  <div class="flex h-[calc(100vh-64px)] overflow-hidden font-display -m-8 relative">
+    <!-- Mobile Sidebar Backdrop -->
+    <Transition name="fade">
+      <div v-if="showSidebar" @click="showSidebar = false" class="fixed inset-0 bg-black/40 z-30 md:hidden"></div>
+    </Transition>
+
     <!-- Sidebar Navigation (Right side in RTL) -->
-    <aside class="w-80 bg-bg-surface border-l border-border-base flex flex-col shrink-0 transition-colors duration-300">
+    <aside :class="['w-80 bg-bg-surface border-l border-border-base flex flex-col shrink-0 transition-all duration-300 z-40',
+      showSidebar ? 'fixed inset-y-0 right-0 md:relative md:inset-auto shadow-2xl md:shadow-none' : 'hidden md:flex']">
       <div class="p-4 border-b border-border-base">
         <button @click="startNewConversation"
           class="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white rounded-lg py-2.5 font-bold transition-colors cursor-pointer shadow-sm">
@@ -50,8 +56,12 @@
     <main class="flex-1 flex flex-col h-full bg-bg-base relative transition-colors duration-300">
       <!-- Top Navbar -->
       <header
-        class="flex items-center justify-between bg-bg-surface px-8 py-4 border-b border-border-base z-10 shadow-sm transition-colors duration-300">
-        <div class="flex items-center gap-4">
+        class="flex items-center justify-between bg-bg-surface px-4 md:px-8 py-4 border-b border-border-base z-10 shadow-sm transition-colors duration-300">
+        <div class="flex items-center gap-3 md:gap-4">
+          <!-- Mobile sidebar toggle -->
+          <button @click="showSidebar = !showSidebar" class="md:hidden p-2 text-text-muted hover:bg-bg-surface-hover rounded-lg transition-colors cursor-pointer">
+            <span class="material-symbols-outlined">menu</span>
+          </button>
           <div class="relative">
             <div
               class="size-10 rounded-full bg-primary/10 flex items-center justify-center text-primary border border-primary/20">
@@ -62,10 +72,13 @@
           </div>
           <div>
             <h2 class="text-lg font-bold leading-tight text-text-main">المساعد الذكي</h2>
-            <p class="text-xs text-text-muted">متصل الآن - جاهز للمساعدة الأكاديمية</p>
+            <p class="text-xs text-text-muted hidden sm:block">متصل الآن - جاهز للمساعدة الأكاديمية</p>
           </div>
         </div>
         <div class="flex items-center gap-3">
+          <button @click="showSidebar = !showSidebar" class="hidden md:flex p-2 text-text-muted hover:bg-bg-surface-hover rounded-lg transition-colors cursor-pointer" title="المحادثات السابقة">
+            <span class="material-symbols-outlined">history</span>
+          </button>
           <button class="p-2 text-text-muted hover:bg-bg-surface-hover rounded-lg transition-colors cursor-pointer">
             <span class="material-symbols-outlined">more_vert</span>
           </button>
@@ -235,6 +248,7 @@ const fileInput = ref(null);
 const imageInput = ref(null);
 const newMessage = ref('');
 const isTyping = ref(false);
+const showSidebar = ref(false);
 const conversationId = ref(null);
 const conversations = ref([]);
 const isLoading = ref(true);
@@ -415,5 +429,18 @@ const handleImageUpload = (event) => {
 
 onMounted(() => {
   loadConversations();
+  // Show sidebar by default on desktop
+  if (window.innerWidth >= 768) showSidebar.value = true;
 });
 </script>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>

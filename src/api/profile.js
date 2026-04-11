@@ -18,9 +18,10 @@ export const profileApi = {
    * @param {Object|FormData} payload
    */
   updateProfile(payload) {
-    // If payload is FormData (has image), set proper headers
+    // If payload is FormData (has image), use POST with method spoofing
     if (payload instanceof FormData) {
-      return apiClient.put('/update', payload, {
+      payload.append('_method', 'PUT')
+      return apiClient.post('/update', payload, {
         headers: { 'Content-Type': 'multipart/form-data' },
       })
     }

@@ -33,7 +33,7 @@ export const authApi = {
    * Get the current authenticated user's profile.
    */
   getUser() {
-    return apiClient.get('/auth/user')
+    return apiClient.get('/profile')
   },
 
   /**

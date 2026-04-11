@@ -330,8 +330,8 @@ const saveChanges = async () => {
       }
       await profileApi.changePassword({
         current_password: passwordForm.current,
-        new_password: passwordForm.new,
-        new_password_confirmation: passwordForm.confirm,
+        password: passwordForm.new,
+        password_confirmation: passwordForm.confirm,
       })
       showToast('تم التحديث', 'تم تغيير كلمة المرور بنجاح')
       passwordForm.current = ''

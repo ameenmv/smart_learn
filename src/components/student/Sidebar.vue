@@ -59,11 +59,14 @@
             <span class="material-symbols-outlined">school</span>
             <span class="text-sm">المقررات</span>
           </RouterLink>
+          <!-- Assignments link removed: assignments are accessed from within each course -->
+          <!--
           <RouterLink to="/student/assignments" active-class="active-nav bg-primary/10 text-primary font-bold" @click="handleNavClick"
             class="flex items-center gap-3 px-4 py-3 rounded-lg text-text-muted hover:bg-bg-surface-hover transition-all">
             <span class="material-symbols-outlined">assignment</span>
             <span class="text-sm">الواجبات</span>
           </RouterLink>
+          -->
           <!-- <RouterLink to="/student/schedule" active-class="active-nav bg-primary/10 text-primary font-bold"
             class="flex items-center gap-3 px-4 py-3 rounded-lg text-text-muted hover:bg-bg-surface-hover transition-all">
             <span class="material-symbols-outlined">calendar_today</span>

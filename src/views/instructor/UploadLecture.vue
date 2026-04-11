@@ -467,7 +467,7 @@ const startUpload = async (file) => {
 
   try {
     const formData = new FormData();
-    formData.append('video', file);
+    formData.append('video_path', file);
 
     const startTime = Date.now();
 

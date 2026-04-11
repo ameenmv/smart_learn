@@ -103,7 +103,7 @@
         </div>
 
         <!-- Enrollment CTA (If Not Enrolled) -->
-        <div v-else class="bg-gradient-to-tr from-primary/10 to-transparent p-6 rounded-xl shadow-sm border border-primary/20 transition-colors duration-300 flex flex-col items-center text-center">
+        <div v-else-if="enrollmentStatus !== 'pending'" class="bg-gradient-to-tr from-primary/10 to-transparent p-6 rounded-xl shadow-sm border border-primary/20 transition-colors duration-300 flex flex-col items-center text-center">
           <span class="material-symbols-outlined text-5xl text-primary mb-2">school</span>
           <h3 class="text-lg font-bold mb-2 text-text-main">لست مسجلاً في هذا المقرر</h3>
           <p class="text-sm text-text-muted mb-6">احصل على إمكانية الوصول لجميع الدروس، المحاضرات والاختبارات.</p>
@@ -114,6 +114,17 @@
           </button>
         </div>
 
+        <!-- Pending Enrollment State -->
+        <div v-else class="bg-gradient-to-tr from-amber-500/10 to-transparent p-6 rounded-xl shadow-sm border border-amber-500/20 transition-colors duration-300 flex flex-col items-center text-center">
+          <span class="material-symbols-outlined text-5xl text-amber-500 mb-2">hourglass_top</span>
+          <h3 class="text-lg font-bold mb-2 text-text-main">طلبك قيد المراجعة</h3>
+          <p class="text-sm text-text-muted mb-4">تم إرسال طلب الانضمام وبانتظار موافقة المحاضر.</p>
+          <div class="w-full bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-lg p-3 flex items-center gap-3">
+            <span class="material-symbols-outlined text-amber-600 text-xl">schedule</span>
+            <p class="text-xs text-amber-700 dark:text-amber-400 font-medium">ستتمكن من الوصول للمحتوى فور موافقة المحاضر على طلبك.</p>
+          </div>
+        </div>
+
         <!-- Instructor Info -->
         <div class="bg-bg-surface p-6 rounded-xl shadow-sm border border-border-base transition-colors duration-300">
           <h3 class="text-lg font-bold mb-4 text-text-main">عن المحاضر</h3>
@@ -122,7 +133,7 @@
               <span v-if="!course.instructor_image" class="material-symbols-outlined text-4xl text-text-muted">person</span>
               <img v-else alt="Instructor" class="w-full h-full object-cover" :src="course.instructor_image"/>
             </div>
-            <h4 class="font-bold text-text-main">{{ course.instructor_name || 'محاضر' }}</h4>
+            <h4 class="font-bold text-text-main">{{ course.instructor?.name || course.instructor_name || 'محاضر' }}</h4>
             <p class="text-sm text-text-muted">محاضر المقرر</p>
           </div>
           <p class="mt-4 text-sm text-text-muted leading-relaxed text-right">
@@ -138,13 +149,16 @@
           </div>
         </div>
 
-        <!-- Notification -->
-        <div class="bg-amber-50 dark:bg-amber-900/10 border-r-4 border-amber-500 p-4 rounded-lg">
-          <div class="flex items-start gap-3">
-            <span class="material-symbols-outlined text-amber-600">event_available</span>
+        <!-- Course Stats -->
+        <div v-if="course.is_enrolled" class="bg-bg-surface p-4 rounded-xl shadow-sm border border-border-base transition-colors duration-300">
+          <div class="grid grid-cols-2 gap-4 text-center">
             <div>
-              <p class="text-amber-800 dark:text-amber-400 font-bold text-sm">الموعد النهائي القادم</p>
-              <p class="text-amber-700 dark:text-amber-500 text-xs mt-1">واجب الفصل الرابع: الثلاثاء، 25 أكتوبر</p>
+              <p class="text-2xl font-bold text-primary">{{ course.lectures?.length || course.total_lectures || 0 }}</p>
+              <p class="text-xs text-text-muted">محاضرة</p>
+            </div>
+            <div>
+              <p class="text-2xl font-bold text-primary">{{ course.quizzes?.length || 0 }}</p>
+              <p class="text-xs text-text-muted">اختبار</p>
             </div>
           </div>
         </div>
@@ -154,10 +168,7 @@
       <div class="lg:col-span-8">
         <div class="flex justify-between items-center mb-6">
           <h2 class="text-xl font-bold text-text-main">مخطط المادة الدراسية</h2>
-          <div class="flex items-center gap-2 cursor-pointer hover:text-primary transition-colors group">
-            <span class="text-sm text-text-muted group-hover:text-primary">توسيع الكل</span>
-            <span class="material-symbols-outlined text-text-muted group-hover:text-primary">unfold_more</span>
-          </div>
+          <span class="text-sm text-text-muted">{{ course.lectures?.length || 0 }} محاضرة</span>
         </div>
 
         <div class="space-y-4">
@@ -180,11 +191,14 @@
             
             <div class="relative z-20 flex flex-col items-center max-w-sm mt-10">
               <div class="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-6">
-                <span class="material-symbols-outlined text-4xl text-primary">lock</span>
+                <span v-if="enrollmentStatus === 'pending'" class="material-symbols-outlined text-4xl text-amber-500">hourglass_top</span>
+                <span v-else class="material-symbols-outlined text-4xl text-primary">lock</span>
               </div>
-              <h3 class="text-2xl font-bold text-text-main mb-3">محتوى المقرر مقفل</h3>
-              <p class="text-text-muted mb-8 leading-relaxed">قم بالانضمام للمقرر الآن لتتمكن من فتح جميع الدروس والمحاضرات والاختبارات المتاحة وتتبع تقدمك.</p>
-              <button @click="enrollInCourse" :disabled="isEnrolling" class="w-full bg-primary text-white py-3 px-8 rounded-lg font-bold hover:bg-blue-700 transition-colors flex justify-center items-center gap-2 shadow-lg shadow-primary/20 disabled:opacity-50 cursor-pointer">
+              <h3 v-if="enrollmentStatus === 'pending'" class="text-2xl font-bold text-text-main mb-3">طلبك قيد المراجعة</h3>
+              <h3 v-else class="text-2xl font-bold text-text-main mb-3">محتوى المقرر مقفل</h3>
+              <p v-if="enrollmentStatus === 'pending'" class="text-text-muted mb-8 leading-relaxed">طلب انضمامك لهذا المقرر قيد المراجعة من قبل المحاضر. سيتم إخطارك فور القبول.</p>
+              <p v-else class="text-text-muted mb-8 leading-relaxed">قم بالانضمام للمقرر الآن لتتمكن من فتح جميع الدروس والمحاضرات والاختبارات المتاحة وتتبع تقدمك.</p>
+              <button v-if="enrollmentStatus !== 'pending'" @click="enrollInCourse" :disabled="isEnrolling" class="w-full bg-primary text-white py-3 px-8 rounded-lg font-bold hover:bg-blue-700 transition-colors flex justify-center items-center gap-2 shadow-lg shadow-primary/20 disabled:opacity-50 cursor-pointer">
                 <span v-if="isEnrolling" class="size-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
                 <span v-else class="material-symbols-outlined">add_task</span>
                 انضم للمقرر الآن
@@ -192,11 +206,43 @@
             </div>
           </div>
 
-          <!-- Real Syllabus Iterate (When API supports it) -->
+          <!-- Real Lecture List -->
           <template v-else>
-            <div v-for="(module, index) in course.lectures" :key="index" class="bg-bg-surface border border-border-base rounded-xl overflow-hidden transition-colors duration-300">
-              <!-- Placeholder for real modules -->
-            </div>
+            <RouterLink 
+              v-for="(lecture, index) in course.lectures" 
+              :key="lecture.id" 
+              :to="`/student/courses/${course.id}/lecture/${lecture.id}`"
+              class="bg-bg-surface border border-border-base rounded-xl overflow-hidden transition-all duration-300 hover:border-primary/50 hover:shadow-md flex items-center gap-4 p-5 group cursor-pointer"
+            >
+              <!-- Order Number -->
+              <div class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 font-bold text-sm"
+                :class="lecture.is_completed ? 'bg-green-100 text-green-600 dark:bg-green-900/20' : 'bg-primary/10 text-primary'">
+                <span v-if="lecture.is_completed" class="material-symbols-outlined text-xl">check_circle</span>
+                <span v-else>{{ index + 1 }}</span>
+              </div>
+
+              <!-- Lecture Info -->
+              <div class="flex-1 min-w-0">
+                <h4 class="font-bold text-text-main group-hover:text-primary transition-colors truncate">{{ lecture.title }}</h4>
+                <div class="flex items-center gap-4 mt-1 text-xs text-text-muted">
+                  <span v-if="lecture.video_duration" class="flex items-center gap-1">
+                    <span class="material-symbols-outlined text-sm">timer</span>
+                    {{ Math.ceil(lecture.video_duration / 60) }} دقيقة
+                  </span>
+                  <span v-if="lecture.video_path || lecture.video_url" class="flex items-center gap-1">
+                    <span class="material-symbols-outlined text-sm">play_circle</span>
+                    فيديو
+                  </span>
+                  <span v-if="lecture.attachment" class="flex items-center gap-1">
+                    <span class="material-symbols-outlined text-sm">attach_file</span>
+                    مرفق
+                  </span>
+                </div>
+              </div>
+
+              <!-- Arrow -->
+              <span class="material-symbols-outlined text-text-muted group-hover:text-primary transition-colors shrink-0">arrow_back_ios</span>
+            </RouterLink>
           </template>
         </div>
 
@@ -292,6 +338,7 @@ const activeTab = ref('content');
 const course = ref(null);
 const isLoading = ref(true);
 const isEnrolling = ref(false);
+const enrollmentStatus = ref(null); // 'approved', 'pending', null
 
 const showToast = ref(false);
 const toastTitle = ref('');
@@ -304,8 +351,15 @@ const fetchCourse = async () => {
     const { data } = await studentApi.getCourseDetails(route.params.id);
     course.value = data.data || data;
     course.value.is_enrolled = true;
+    enrollmentStatus.value = 'approved';
   } catch (error) {
-    if (error.response?.status === 403 || error.response?.status === 401) {
+    if (error.response?.status === 403) {
+       // Check if the student enrollment is pending
+       const responseData = error.response?.data;
+       if (responseData?.enrollment_status === 'pending') {
+         enrollmentStatus.value = 'pending';
+       }
+
        try {
           const publicRes = await coursesApi.getCourse(route.params.id);
           course.value = publicRes.data.data || publicRes.data;
@@ -327,11 +381,11 @@ const enrollInCourse = async () => {
     isEnrolling.value = true;
     showToast.value = false;
     try {
-        await studentApi.enrollInCourse(course.value.id);
+        const { data } = await studentApi.enrollInCourse(course.value.id);
         
         toastType.value = 'success';
         toastTitle.value = 'نجاح';
-        toastMessage.value = 'تم الانضمام للمقرر بنجاح! يمكنك الآن بدء التعلم.';
+        toastMessage.value = data.message || 'تم الانضمام للمقرر بنجاح! يمكنك الآن بدء التعلم.';
         showToast.value = true;
 
         await fetchCourse();
