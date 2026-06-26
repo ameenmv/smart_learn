@@ -1,283 +1,313 @@
 <template>
   <div class="flex flex-col h-full bg-bg-base text-text-main font-sans overflow-y-auto">
-    <header class="bg-bg-surface border-b border-border-base h-16 flex items-center justify-between px-8 sticky top-0 z-10 shrink-0">
+    <header
+      class="bg-bg-surface border-b border-border-base h-16 flex items-center justify-between px-8 sticky top-0 z-10 shrink-0">
       <div class="flex items-center gap-4">
         <div class="flex items-center gap-2 text-sm text-text-muted">
           <router-link class="hover:text-primary transition-colors" to="/instructor/dashboard">الرئيسية</router-link>
           <span class="material-symbols-outlined text-xs">chevron_left</span>
           <router-link class="hover:text-primary transition-colors" to="/instructor/courses">المقررات</router-link>
           <span class="material-symbols-outlined text-xs">chevron_left</span>
-          <span class="text-text-main font-semibold">إدارة الطلاب - برمجة الويب</span>
+          <span class="text-text-main font-semibold">إدارة الطلاب</span>
         </div>
       </div>
       <div class="flex items-center gap-4">
-        <button class="w-10 h-10 flex items-center justify-center rounded-full bg-bg-base text-text-muted hover:bg-bg-base-hover transition-colors">
-          <span class="material-symbols-outlined">notifications</span>
-        </button>
-        <router-link to="/instructor/settings" class="w-10 h-10 flex items-center justify-center rounded-full bg-bg-base text-text-muted hover:bg-bg-base-hover transition-colors">
+        <router-link to="/instructor/settings"
+          class="w-10 h-10 flex items-center justify-center rounded-full bg-bg-base text-text-muted hover:bg-bg-base-hover transition-colors">
           <span class="material-symbols-outlined">settings</span>
         </router-link>
       </div>
     </header>
 
+    <!-- Toast -->
+    <Transition name="toast">
+      <div v-if="toast.show"
+        class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 px-6 py-4 rounded-xl shadow-xl border backdrop-blur-md transition-all duration-300 min-w-[320px] cursor-pointer hover:scale-[1.02]"
+        :class="toast.type === 'success' ? 'bg-emerald-50/90 border-emerald-200 dark:bg-emerald-900/90 dark:border-emerald-800' : 'bg-red-50/90 border-red-200 dark:bg-red-900/90 dark:border-red-800'"
+        @click="hideToast">
+        <div class="p-2 rounded-full"
+          :class="toast.type === 'success' ? 'bg-emerald-100 dark:bg-emerald-800 text-emerald-600 dark:text-emerald-200' : 'bg-red-100 dark:bg-red-800 text-red-600 dark:text-red-200'">
+          <span class="material-symbols-outlined text-xl">{{ toast.type === 'success' ? 'check_circle' : 'error'
+            }}</span>
+        </div>
+        <div class="flex flex-col flex-1">
+          <h4 class="font-bold text-sm"
+            :class="toast.type === 'success' ? 'text-emerald-900 dark:text-emerald-100' : 'text-red-900 dark:text-red-100'">
+            {{ toast.title }}</h4>
+          <p class="text-xs opacity-90"
+            :class="toast.type === 'success' ? 'text-emerald-800 dark:text-emerald-200' : 'text-red-800 dark:text-red-200'">
+            {{ toast.message }}</p>
+        </div>
+      </div>
+    </Transition>
+
     <div class="p-8 max-w-7xl mx-auto w-full flex-1">
       <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
         <div>
-          <h1 class="text-3xl font-black tracking-tight mb-2 text-text-main">إدارة الطلاب - برمجة الويب</h1>
-          <p class="text-text-muted">متابعة أداء الطلاب وتحليل النتائج للفصل الدراسي الحالي (الشعبة أ)</p>
-        </div>
-        <div class="flex gap-3">
-          <button class="flex items-center gap-2 bg-bg-surface border border-border-base px-4 py-2 rounded-lg font-bold text-sm hover:bg-bg-base transition-colors text-text-main cursor-pointer">
-            <span class="material-symbols-outlined text-lg">download</span>
-            تصدير التقارير
-          </button>
-          <button class="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg font-bold text-sm shadow-lg shadow-primary/20 hover:bg-primary/90 transition-colors cursor-pointer">
-            <span class="material-symbols-outlined text-lg">add</span>
-            إضافة طالب
-          </button>
+          <h1 class="text-3xl font-black tracking-tight mb-2 text-text-main">إدارة الطلاب</h1>
+          <p class="text-text-muted">عرض قائمة الطلاب المسجلين وتحديث حالات التسجيل</p>
         </div>
       </div>
 
-      <div class="grid grid-cols-1 xl:grid-cols-4 gap-8">
-        <!-- Stats Card -->
+      <!-- Loading -->
+      <div v-if="isLoading" class="flex flex-col items-center justify-center py-20">
+        <span class="size-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin mb-4"></span>
+        <p class="text-text-muted font-bold">جاري تحميل الطلاب...</p>
+      </div>
+
+      <!-- Error -->
+      <div v-else-if="loadError"
+        class="p-6 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-center">
+        <span class="material-symbols-outlined text-red-500 text-4xl mb-2">error</span>
+        <p class="text-red-700 dark:text-red-400 font-bold">{{ loadError }}</p>
+        <button @click="fetchStudents" class="mt-4 text-sm text-primary font-bold hover:underline cursor-pointer">إعادة
+          المحاولة</button>
+      </div>
+
+      <!-- Data -->
+      <div v-else class="grid grid-cols-1 xl:grid-cols-4 gap-8">
+        <!-- Stats -->
         <div class="xl:col-span-1 space-y-6 order-last xl:order-first">
           <div class="bg-bg-surface p-6 rounded-xl border border-border-base shadow-sm">
             <h3 class="text-text-muted text-sm font-bold mb-4">إحصائيات المقرر</h3>
-            <div class="space-y-6">
-              <div>
-                <div class="flex justify-between items-end mb-1">
-                  <p class="text-xs font-medium text-text-muted">متوسط درجات الفصل</p>
-                  <p class="text-xl font-bold text-primary">78%</p>
-                </div>
-                <div class="w-full bg-bg-base h-2 rounded-full overflow-hidden">
-                  <div class="bg-primary h-full" style="width: 78%"></div>
-                </div>
-              </div>
-              <div>
-                <div class="flex justify-between items-end mb-1">
-                  <p class="text-xs font-medium text-text-muted">نسبة الإكمال</p>
-                  <p class="text-xl font-bold text-emerald-500">65%</p>
-                </div>
-                <div class="w-full bg-bg-base h-2 rounded-full overflow-hidden">
-                  <div class="bg-emerald-500 h-full" style="width: 65%"></div>
-                </div>
-              </div>
-              <div class="pt-4 border-t border-border-base flex justify-between">
+            <div class="space-y-4">
+              <div class="pt-4 flex justify-between">
                 <div class="text-center">
-                  <p class="text-[10px] text-text-muted uppercase">الطلاب</p>
-                  <p class="text-lg font-bold text-text-main">45</p>
+                  <p class="text-[10px] text-text-muted uppercase">إجمالي</p>
+                  <p class="text-lg font-bold text-text-main">{{ students.length }}</p>
                 </div>
                 <div class="text-center">
-                  <p class="text-[10px] text-text-muted uppercase">النشطون</p>
-                  <p class="text-lg font-bold text-emerald-500">42</p>
+                  <p class="text-[10px] text-text-muted uppercase">مقبول</p>
+                  <p class="text-lg font-bold text-emerald-500">{{ approvedCount }}</p>
                 </div>
                 <div class="text-center">
-                  <p class="text-[10px] text-text-muted uppercase">المتعثرون</p>
-                  <p class="text-lg font-bold text-rose-500">3</p>
+                  <p class="text-[10px] text-text-muted uppercase">معلق</p>
+                  <p class="text-lg font-bold text-amber-500">{{ pendingCount }}</p>
                 </div>
               </div>
-            </div>
-          </div>
-
-          <!-- AI Card -->
-          <div class="bg-primary p-6 rounded-xl text-white shadow-xl shadow-primary/30 relative overflow-hidden">
-            <div class="relative z-10">
-              <h4 class="font-bold text-lg mb-2">تحليل الذكاء الاصطناعي</h4>
-              <p class="text-sm opacity-90 mb-4 leading-relaxed">بناءً على الأنشطة الأخيرة، هناك 3 طلاب يحتاجون لتدخل سريع لضمان تجاوز المقرر.</p>
-              <button class="w-full py-2 bg-white/20 backdrop-blur-md rounded-lg text-sm font-bold border border-white/30 hover:bg-white/30 transition-all cursor-pointer">مراجعة الطلاب المتعثرين</button>
-            </div>
-            <div class="absolute -right-4 -bottom-4 opacity-20 transform rotate-12">
-              <span class="material-symbols-outlined text-8xl">auto_awesome</span>
             </div>
           </div>
         </div>
 
-        <!-- Students Table -->
+        <!-- Table -->
         <div class="xl:col-span-3">
           <div class="bg-bg-surface rounded-xl border border-border-base shadow-sm overflow-hidden">
             <div class="p-6 border-b border-border-base flex flex-col md:flex-row gap-4 items-center">
               <div class="relative flex-1 w-full">
-                <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-text-muted">search</span>
-                <input class="w-full pr-10 pl-4 py-2 bg-bg-base border-none rounded-lg focus:ring-2 focus:ring-primary text-sm transition-all text-text-main placeholder:text-text-muted" placeholder="البحث عن طالب بالاسم أو الرقم الجامعي..." type="text"/>
-              </div>
-              <div class="flex items-center gap-3 w-full md:w-auto">
-                <button class="flex items-center gap-2 px-4 py-2 rounded-lg bg-rose-50 text-rose-600 border border-rose-100 dark:bg-rose-900/20 dark:border-rose-900/30 text-sm font-bold whitespace-nowrap hover:bg-rose-100 dark:hover:bg-rose-900/30 transition-colors cursor-pointer">
-                  <span class="material-symbols-outlined text-lg">warning</span>
-                  الطلاب المتعثرين
-                </button>
-                <button class="flex items-center gap-2 px-4 py-2 rounded-lg bg-bg-base text-text-muted text-sm font-bold border border-transparent hover:bg-bg-base-hover transition-colors cursor-pointer">
-                  <span class="material-symbols-outlined text-lg">filter_list</span>
-                  تصفية
-                </button>
+                <span
+                  class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-text-muted">search</span>
+                <input v-model="searchQuery"
+                  class="w-full pr-10 pl-4 py-2 bg-bg-base border-none rounded-lg focus:ring-2 focus:ring-primary text-sm text-text-main placeholder:text-text-muted outline-none"
+                  placeholder="البحث عن طالب..." type="text" />
               </div>
             </div>
-            <div class="overflow-x-auto">
+
+            <!-- Empty -->
+            <div v-if="filteredStudents.length === 0" class="py-16 text-center">
+              <span class="material-symbols-outlined text-5xl text-text-muted/30 mb-3">group_off</span>
+              <p class="text-text-muted font-bold">لا يوجد طلاب مسجلين</p>
+            </div>
+
+            <!-- Table -->
+            <div v-else class="overflow-x-auto">
               <table class="w-full text-right">
                 <thead>
                   <tr class="bg-bg-base text-text-muted text-xs font-bold uppercase tracking-wider">
                     <th class="px-6 py-4">اسم الطالب</th>
-                    <th class="px-6 py-4">التقدم في المقرر</th>
-                    <th class="px-6 py-4">آخر نشاط</th>
-                    <th class="px-6 py-4">متوسط الدرجات</th>
+                    <th class="px-6 py-4">البريد الإلكتروني</th>
+                    <th class="px-6 py-4">الحالة</th>
                     <th class="px-6 py-4">الإجراءات</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-border-base">
-                  <tr class="hover:bg-bg-base/50 transition-colors">
+                  <tr v-for="student in filteredStudents" :key="student.id"
+                    class="hover:bg-bg-base/50 transition-colors">
                     <td class="px-6 py-4">
                       <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-full bg-cover bg-center" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBvc4rRjVJchqgsdfq2sHwgJn30RYaayPCMqgMXKySRGR0V9JYXzcLsTGHUIrR1aVEZaYuGlPehWNgL4pODOcC2iAPfMXza3iuDmrDjTdp6OFHXHUaDTNVUrsql3Rao74Bsx6AQduYwOYNte_pnl_K9h2S4JDkH5P5KFoOXRwzj26p91YyHgKLPp_vWGMfWMoaabwfcVs0XCmtIpf068-qXkjmwGK6weI-TLRT-sfq4kTC92ub3vSby5dCHGcxsjL2x494LY_w2qpzL')"></div>
+                        <div
+                          class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
+                          {{ getInitials(student.name) }}
+                        </div>
                         <div>
-                          <p class="font-bold text-sm text-text-main">عبدالرحمن خالد السعد</p>
-                          <p class="text-xs text-text-muted">#441002341</p>
+                          <p class="font-bold text-sm text-text-main">{{ student.name }}</p>
+                          <p v-if="student.id" class="text-xs text-text-muted">#{{ student.id }}</p>
                         </div>
                       </div>
                     </td>
+                    <td class="px-6 py-4 text-sm text-text-muted">{{ student.email || '—' }}</td>
                     <td class="px-6 py-4">
-                      <div class="flex items-center gap-3 min-w-32">
-                        <div class="flex-1 bg-bg-base h-2 rounded-full overflow-hidden">
-                          <div class="bg-primary h-full" style="width: 85%"></div>
-                        </div>
-                        <span class="text-xs font-bold text-text-muted">85%</span>
-                      </div>
-                    </td>
-                    <td class="px-6 py-4 text-xs text-text-muted">منذ ساعتين</td>
-                    <td class="px-6 py-4">
-                      <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
-                        92% - ممتاز
+                      <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold"
+                        :class="getStatusClass(student.pivot?.status || student.status)">
+                        {{ getStatusLabel(student.pivot?.status || student.status) }}
                       </span>
                     </td>
                     <td class="px-6 py-4">
                       <div class="flex gap-2">
-                        <button class="p-2 text-text-muted hover:text-primary transition-colors cursor-pointer"><span class="material-symbols-outlined text-lg">visibility</span></button>
-                        <button class="p-2 text-text-muted hover:text-primary transition-colors cursor-pointer"><span class="material-symbols-outlined text-lg">mail</span></button>
+                        <button v-if="(student.pivot?.status || student.status) === 'pending'"
+                          @click="updateStatus(student.id, 'approved')" :disabled="student._updating"
+                          class="px-3 py-1.5 bg-emerald-100 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 text-xs font-bold rounded-lg hover:bg-emerald-200 dark:hover:bg-emerald-900/30 transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-1">
+                          <span v-if="student._updating"
+                            class="size-3 border-2 border-emerald-400/30 border-t-emerald-400 rounded-full animate-spin"></span>
+                          <span v-else class="material-symbols-outlined text-sm">check</span>
+                          قبول
+                        </button>
+                        <button v-if="(student.pivot?.status || student.status) === 'pending'"
+                          @click="updateStatus(student.id, 'rejected')" :disabled="student._updating"
+                          class="px-3 py-1.5 bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-400 text-xs font-bold rounded-lg hover:bg-red-200 dark:hover:bg-red-900/30 transition-colors cursor-pointer disabled:opacity-50 flex items-center gap-1">
+                          <span class="material-symbols-outlined text-sm">close</span>
+                          رفض
+                        </button>
+                        <span v-if="(student.pivot?.status || student.status) !== 'pending'"
+                          class="text-xs text-text-muted">—</span>
                       </div>
                     </td>
                   </tr>
-                  <tr class="hover:bg-bg-base/50 transition-colors">
-                      <td class="px-6 py-4">
-                        <div class="flex items-center gap-3">
-                          <div class="w-10 h-10 rounded-full bg-cover bg-center" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBaqrrxW64wL5pmLcdJnKl4tH3TRwiMSKrXjf7ax6kJQSYQ93ddCx18RYSBq5mAz9xTNNJszcSm20OpzwDjclh3D8I9qhMzIufaay_uxVeCkHbCK6oHuTKFDh9nkMuotSRZWYSIMljPUcS8GRvYVMhDdfYn-65OgwmbFonTCXLrQpOgfdDJ6yMR8jTnfUpk-OK6rwDB4Rk1SqV5zGsT7dflIAc9Myf5gjpsDIbXDiV2SPStBG-FCu9Sf8uiQjSe6JXuFajUTviqs9gW')"></div>
-                          <div>
-                            <p class="font-bold text-sm text-text-main">سارة محمد الراشد</p>
-                            <p class="text-xs text-text-muted">#441005622</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td class="px-6 py-4">
-                        <div class="flex items-center gap-3 min-w-32">
-                          <div class="flex-1 bg-bg-base h-2 rounded-full overflow-hidden">
-                            <div class="bg-primary h-full" style="width: 42%"></div>
-                          </div>
-                          <span class="text-xs font-bold text-text-muted">42%</span>
-                        </div>
-                      </td>
-                      <td class="px-6 py-4 text-xs text-text-muted">يوم أمس</td>
-                      <td class="px-6 py-4">
-                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400">
-                          58% - متعثر
-                        </span>
-                      </td>
-                      <td class="px-6 py-4">
-                        <div class="flex gap-2">
-                          <button class="p-2 text-text-muted hover:text-primary transition-colors cursor-pointer"><span class="material-symbols-outlined text-lg">visibility</span></button>
-                          <button class="p-2 text-text-muted hover:text-primary transition-colors cursor-pointer"><span class="material-symbols-outlined text-lg">mail</span></button>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr class="hover:bg-bg-base/50 transition-colors">
-                      <td class="px-6 py-4">
-                        <div class="flex items-center gap-3">
-                          <div class="w-10 h-10 rounded-full bg-cover bg-center" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBL6DxQhit5jAEdSjsD6s787U7gZkpnL9l9WQV6dDXFQ5rQTcgxhJDUg6mz_rJC27jNuOqn5K19sQ7a6D_UXV6NEfVO7yG4jlYY_ef8ireBZOIgpLADE092NzCprN78jwkLidni46yxP-MVXMcEEZsoDJuXu2lZ0JX_Z_PFCAXbm8acjFYEdDA2ZQQjXZBnrbtf6da5Bnh1LCkDj97CPNJ4bwDQZq4WYXzrvkaTt_OwNhx8XMrbLo6oh4i1YpvPpJ6ibcShGcuzniA_')"></div>
-                          <div>
-                            <p class="font-bold text-sm text-text-main">فهد بن عبدالله</p>
-                            <p class="text-xs text-text-muted">#441001189</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td class="px-6 py-4">
-                        <div class="flex items-center gap-3 min-w-32">
-                          <div class="flex-1 bg-bg-base h-2 rounded-full overflow-hidden">
-                            <div class="bg-primary h-full" style="width: 70%"></div>
-                          </div>
-                          <span class="text-xs font-bold text-text-muted">70%</span>
-                        </div>
-                      </td>
-                      <td class="px-6 py-4 text-xs text-text-muted">منذ 3 أيام</td>
-                      <td class="px-6 py-4">
-                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
-                          74% - جيد
-                        </span>
-                      </td>
-                      <td class="px-6 py-4">
-                        <div class="flex gap-2">
-                          <button class="p-2 text-text-muted hover:text-primary transition-colors cursor-pointer"><span class="material-symbols-outlined text-lg">visibility</span></button>
-                          <button class="p-2 text-text-muted hover:text-primary transition-colors cursor-pointer"><span class="material-symbols-outlined text-lg">mail</span></button>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr class="hover:bg-bg-base/50 transition-colors">
-                      <td class="px-6 py-4">
-                        <div class="flex items-center gap-3">
-                          <div class="w-10 h-10 rounded-full bg-cover bg-center" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDyUlNHHSQaw3fJJ5MzI2_gfKPFW6QAxtBXc4QoV-WaEFWyDdd0jceMtQ6HuKOyahYla7GZsbt8oKucRyHXgc0G30jSXS8xFc2-Nvq9gpPCU0AdHfPM_xOh-lo2t5XaCEuSU2vuOunGd6gsUcWY6zreKp_NuqBxfiLb2J34-r58x7nnsZQd0Eo5h2YDV-GuIV-0qpK6swP98p8dN6S1viHm5eApICA8XHCFtT4zKjb7i_Yc6llcbxBrWcyMcZTC148ZwEM4I7TRiSTM')"></div>
-                          <div>
-                            <p class="font-bold text-sm text-text-main">ليلى ابراهيم القحطاني</p>
-                            <p class="text-xs text-text-muted">#441008823</p>
-                          </div>
-                        </div>
-                      </td>
-                      <td class="px-6 py-4">
-                        <div class="flex items-center gap-3 min-w-32">
-                          <div class="flex-1 bg-bg-base h-2 rounded-full overflow-hidden">
-                            <div class="bg-primary h-full" style="width: 95%"></div>
-                          </div>
-                          <span class="text-xs font-bold text-text-muted">95%</span>
-                        </div>
-                      </td>
-                      <td class="px-6 py-4 text-xs text-text-muted">الآن</td>
-                      <td class="px-6 py-4">
-                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
-                          98% - ممتاز
-                        </span>
-                      </td>
-                      <td class="px-6 py-4">
-                        <div class="flex gap-2">
-                          <button class="p-2 text-text-muted hover:text-primary transition-colors cursor-pointer"><span class="material-symbols-outlined text-lg">visibility</span></button>
-                          <button class="p-2 text-text-muted hover:text-primary transition-colors cursor-pointer"><span class="material-symbols-outlined text-lg">mail</span></button>
-                        </div>
-                      </td>
-                    </tr>
                 </tbody>
               </table>
             </div>
-            <div class="p-6 border-t border-border-base flex justify-between items-center">
-              <p class="text-xs text-text-muted">عرض 1-4 من أصل 45 طالب</p>
-              <div class="flex gap-2">
-                <button class="w-8 h-8 flex items-center justify-center rounded-lg border border-border-base hover:bg-bg-base cursor-pointer transition-colors text-text-main">
-                  <span class="material-symbols-outlined text-sm">chevron_right</span>
-                </button>
-                <button class="w-8 h-8 flex items-center justify-center rounded-lg bg-primary text-white font-bold text-xs cursor-pointer shadow-md">1</button>
-                <button class="w-8 h-8 flex items-center justify-center rounded-lg border border-border-base hover:bg-bg-base cursor-pointer transition-colors text-text-main text-xs">2</button>
-                <button class="w-8 h-8 flex items-center justify-center rounded-lg border border-border-base hover:bg-bg-base cursor-pointer transition-colors text-text-main text-xs">3</button>
-                <button class="w-8 h-8 flex items-center justify-center rounded-lg border border-border-base hover:bg-bg-base cursor-pointer transition-colors text-text-main">
-                  <span class="material-symbols-outlined text-sm">chevron_left</span>
-                </button>
-              </div>
+            <div class="p-4 border-t border-border-base text-center">
+              <p class="text-xs text-text-muted">عرض {{ filteredStudents.length }} من أصل {{ students.length }} طالب</p>
             </div>
           </div>
         </div>
       </div>
     </div>
-    
+
     <footer class="mt-auto py-6 px-8 text-center text-text-muted text-xs border-t border-border-base shrink-0">
-      © 2024 منصة التعلم الذكي - جامعة التقنية العربية. جميع الحقوق محفوظة.
+      © 2026 Smart Learn. جميع الحقوق محفوظة.
     </footer>
   </div>
 </template>
 
 <script setup>
+import { coursesApi } from '@/api/courses';
+import { useApiErrors } from '@/composables/useApiErrors';
+import { useToast } from '@/composables/useToast';
+import { computed, onMounted, ref } from 'vue';
+import { useRoute } from 'vue-router';
+
+const route = useRoute();
+const { toast, showToast, hideToast } = useToast();
+const { getGeneralError } = useApiErrors();
+
+const isLoading = ref(true);
+const loadError = ref('');
+const students = ref([]);
+const searchQuery = ref('');
+const courseId = ref(null);
+
+// ── Computed ─────────────────────────────────────────────────────────
+
+const filteredStudents = computed(() => {
+  if (!searchQuery.value) return students.value;
+  const q = searchQuery.value.toLowerCase();
+  return students.value.filter(s =>
+    s.name?.toLowerCase().includes(q) || s.email?.toLowerCase().includes(q)
+  );
+});
+
+const approvedCount = computed(() => students.value.filter(s => (s.pivot?.status || s.status) === 'approved').length);
+const pendingCount = computed(() => students.value.filter(s => (s.pivot?.status || s.status) === 'pending').length);
+
+// ── Helpers ──────────────────────────────────────────────────────────
+
+function getInitials(name) {
+  if (!name) return '?';
+  return name.split(' ').slice(0, 2).map(w => w[0]).join('');
+}
+
+function getStatusClass(status) {
+  switch (status) {
+    case 'approved': return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400';
+    case 'pending': return 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400';
+    case 'rejected': return 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
+    default: return 'bg-gray-100 text-gray-600';
+  }
+}
+
+function getStatusLabel(status) {
+  switch (status) {
+    case 'approved': return 'مقبول';
+    case 'pending': return 'معلق';
+    case 'rejected': return 'مرفوض';
+    default: return status || 'غير معروف';
+  }
+}
+
+// ── Fetch Students ───────────────────────────────────────────────────
+
+async function fetchStudents() {
+  isLoading.value = true;
+  loadError.value = '';
+
+  try {
+    // Get courseId from query params, or auto-select first course
+    if (route.query.courseId) {
+      courseId.value = Number(route.query.courseId);
+    } else {
+      const { data } = await coursesApi.getMyCourses();
+      const courses = data.data || [];
+      if (courses.length > 0) {
+        courseId.value = courses[0].id;
+      } else {
+        loadError.value = 'لا توجد دورات. أنشئ دورة أولاً.';
+        return;
+      }
+    }
+
+    const { data } = await coursesApi.getCourseStudents(courseId.value);
+    students.value = (data.data || data || []).map(s => ({ ...s, _updating: false }));
+  } catch (error) {
+    loadError.value = getGeneralError(error);
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+// ── Update Enrollment Status ─────────────────────────────────────────
+
+async function updateStatus(studentId, status) {
+  const student = students.value.find(s => s.id === studentId);
+  if (!student) return;
+
+  student._updating = true;
+
+  try {
+    await coursesApi.updateEnrollmentStatus(courseId.value, studentId, { status });
+
+    // Update local state
+    if (student.pivot) {
+      student.pivot.status = status;
+    } else {
+      student.status = status;
+    }
+
+    showToast(
+      status === 'approved' ? 'تم القبول' : 'تم الرفض',
+      `تم ${status === 'approved' ? 'قبول' : 'رفض'} الطالب ${student.name}`,
+      'success'
+    );
+  } catch (error) {
+    showToast('خطأ', getGeneralError(error), 'error');
+  } finally {
+    student._updating = false;
+  }
+}
+
+// ── Init ─────────────────────────────────────────────────────────────
+
+onMounted(fetchStudents);
 </script>
 
 <style scoped>
-/* Scoped styles overrides */
+.toast-enter-active,
+.toast-leave-active {
+  transition: all 0.3s ease;
+}
+
+.toast-enter-from,
+.toast-leave-to {
+  opacity: 0;
+  transform: translate(-50%, 20px);
+}
 </style>

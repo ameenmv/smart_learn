@@ -1,5 +1,20 @@
 <template>
   <div class="max-w-7xl mx-auto font-display">
+    <!-- Loading State -->
+    <div v-if="isLoading" class="flex flex-col items-center justify-center py-20 min-h-[50vh]">
+      <span class="material-symbols-outlined text-6xl text-primary animate-spin mb-4">refresh</span>
+      <p class="text-lg font-bold text-text-main">جاري تحميل بيانات المقرر...</p>
+    </div>
+
+    <!-- Error/Not Found State -->
+    <div v-else-if="!course" class="flex flex-col items-center justify-center py-20 min-h-[50vh] text-center">
+      <span class="material-symbols-outlined text-7xl text-red-500 mb-4 opacity-75">block</span>
+      <h2 class="text-2xl font-bold text-text-main mb-2">عذراً، لا يمكن الوصول لهذا المقرر</h2>
+      <p class="text-text-muted max-w-md">إما أنك لا تملك صلاحية الوصول، أو أن المقرر غير متاح حالياً.</p>
+      <RouterLink to="/student/courses" class="mt-6 px-8 py-3 bg-primary text-white font-bold rounded-lg hover:bg-primary/90 transition-all">العودة للمقررات المتاحة</RouterLink>
+    </div>
+
+    <template v-else>
     <!-- Course Header -->
     <div v-if="activeTab === 'content'" class="relative rounded-xl overflow-hidden bg-gradient-to-l from-primary to-blue-800 text-white p-8 md:p-12 mb-8 shadow-xl transition-all">
       <div class="absolute top-0 left-0 w-1/3 h-full opacity-10">
@@ -9,17 +24,18 @@
       </div>
       <div class="relative z-10 flex flex-col md:flex-row justify-between items-center gap-8">
         <div class="text-right">
-          <div class="inline-block px-3 py-1 bg-white/20 rounded-full text-xs font-medium mb-4 backdrop-blur-md">كلية التجارة والاقتصاد</div>
-          <h1 class="text-3xl md:text-4xl font-bold mb-4">مبادئ الاقتصاد الجزئي (ECO-101)</h1>
-          <p class="text-blue-100 text-lg max-w-2xl leading-relaxed">استكشاف القوى التي تحرك الأسواق وكيفية اتخاذ الأفراد والشركات للقرارات في ظل ندرة الموارد.</p>
+          <div class="inline-block px-3 py-1 bg-white/20 rounded-full text-xs font-medium mb-4 backdrop-blur-md">{{ course.level || 'مبتدئ' }}</div>
+          <h1 class="text-3xl md:text-4xl font-bold mb-4">{{ course.title }}</h1>
+          <p class="text-blue-100 text-lg max-w-2xl leading-relaxed">{{ course.description || 'لا يوجد وصف متاح لهذا المقرر.' }}</p>
         </div>
         <div class="flex items-center bg-white/10 p-4 rounded-xl backdrop-blur-md border border-white/20">
-          <div class="w-16 h-16 rounded-lg overflow-hidden ml-4 border-2 border-white/50">
-            <img alt="Instructor" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCJxlrlL2wcpQzYKzdALdpejiamkzYbz1cURDrdeCqB159ORf0XcCtT0rxkysEZZOAhGqwK_YeJiSQOGvbEgB-SxykYq89C5wAsHi8Nq2QTDpcURKXVkWNvOKbk4wevCXhvQE0YQPJGFgomMl4B0uP1vKzT8FFD-D-skWUkL7LU-YNjIUOaM_On9_-IkB2SnlQd90g4Gy6euKyvoQVwc-bwFugeUtLy2Db-RV19Nz6XvyR8lVa0UF_T297Sw_q7ttIVggUG21fEIvkj"/>
+          <div class="w-16 h-16 rounded-lg overflow-hidden ml-4 border-2 border-white/50 bg-white/20 flex items-center justify-center">
+            <span v-if="!course.instructor_image" class="material-symbols-outlined text-4xl">person</span>
+            <img v-else alt="Instructor" class="w-full h-full object-cover" :src="course.instructor_image"/>
           </div>
           <div class="text-right">
             <p class="text-sm opacity-80">أستاذ المادة</p>
-            <p class="text-lg font-bold">د. محمد القحطاني</p>
+            <p class="text-lg font-bold">{{ course.instructor_name || 'محاضر' }}</p>
           </div>
         </div>
       </div>
@@ -44,14 +60,14 @@
           <span class="material-symbols-outlined text-sm">quiz</span>
           الاختبارات
         </button>
-        <button 
+        <!-- <button 
           @click="activeTab = 'assignments'" 
           class="px-8 py-4 font-bold flex items-center gap-2 whitespace-nowrap cursor-pointer hover:bg-bg-surface-hover transition-colors"
           :class="activeTab === 'assignments' ? 'text-primary border-b-2 border-primary' : 'text-text-muted hover:text-primary'"
         >
           <span class="material-symbols-outlined text-sm">assignment</span>
           الواجبات
-        </button>
+        </button> -->
       </div>
     </div>
 
@@ -60,7 +76,7 @@
       <!-- Sidebar (Progress & Info) -->
       <div class="lg:col-span-4 space-y-8">
         <!-- Progress -->
-        <div class="bg-bg-surface p-6 rounded-xl shadow-sm border border-border-base transition-colors duration-300">
+        <div v-if="course.is_enrolled !== false" class="bg-bg-surface p-6 rounded-xl shadow-sm border border-border-base transition-colors duration-300">
           <h3 class="text-lg font-bold mb-6 flex items-center gap-2 text-text-main">
             <span class="material-symbols-outlined text-primary">analytics</span>
             تقدمك في المقرر
@@ -73,39 +89,55 @@
                 </span>
               </div>
               <div class="text-right">
-                <span class="text-xs font-semibold inline-block text-primary">65%</span>
+                <span class="text-xs font-semibold inline-block text-primary">{{ course.progress || 0 }}%</span>
               </div>
             </div>
             <div class="overflow-hidden h-2 mb-4 text-xs flex rounded bg-bg-surface-hover">
-              <div class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-primary" style="width:65%"></div>
+              <div class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-primary transition-all" :style="`width:${course.progress || 0}%`"></div>
             </div>
           </div>
-          <div class="mt-6 flex flex-col gap-3">
-            <div class="flex justify-between text-sm text-text-muted">
-              <span>الدروس المنجزة:</span>
-              <span class="font-semibold text-text-main">13 / 20</span>
-            </div>
-            <div class="flex justify-between text-sm text-text-muted">
-              <span>الوقت المستغرق:</span>
-              <span class="font-semibold text-text-main">8 ساعات</span>
-            </div>
-          </div>
-          <RouterLink to="/student/courses/101/lecture/12" class="w-full mt-6 bg-primary text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition-colors flex justify-center items-center gap-2 cursor-pointer shadow-lg shadow-primary/20">
+          <RouterLink v-if="course.progress > 0" :to="`/student/courses/${course.id}/lecture/1`" class="w-full mt-6 bg-primary text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition-colors flex justify-center items-center gap-2 cursor-pointer shadow-lg shadow-primary/20">
             <span class="material-symbols-outlined">play_circle</span>
             متابعة التعلم
           </RouterLink>
+        </div>
+
+        <!-- Enrollment CTA (If Not Enrolled) -->
+        <div v-else-if="enrollmentStatus !== 'pending'" class="bg-gradient-to-tr from-primary/10 to-transparent p-6 rounded-xl shadow-sm border border-primary/20 transition-colors duration-300 flex flex-col items-center text-center">
+          <span class="material-symbols-outlined text-5xl text-primary mb-2">school</span>
+          <h3 class="text-lg font-bold mb-2 text-text-main">لست مسجلاً في هذا المقرر</h3>
+          <p class="text-sm text-text-muted mb-6">احصل على إمكانية الوصول لجميع الدروس، المحاضرات والاختبارات.</p>
+          <button @click="enrollInCourse" :disabled="isEnrolling" class="w-full bg-primary text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition-colors flex justify-center items-center gap-2 shadow-lg shadow-primary/20 disabled:opacity-50">
+            <span v-if="isEnrolling" class="size-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+            <span v-else class="material-symbols-outlined">add_task</span>
+            انضم للمقرر الآن
+          </button>
+        </div>
+
+        <!-- Pending Enrollment State -->
+        <div v-else class="bg-gradient-to-tr from-amber-500/10 to-transparent p-6 rounded-xl shadow-sm border border-amber-500/20 transition-colors duration-300 flex flex-col items-center text-center">
+          <span class="material-symbols-outlined text-5xl text-amber-500 mb-2">hourglass_top</span>
+          <h3 class="text-lg font-bold mb-2 text-text-main">طلبك قيد المراجعة</h3>
+          <p class="text-sm text-text-muted mb-4">تم إرسال طلب الانضمام وبانتظار موافقة المحاضر.</p>
+          <div class="w-full bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-lg p-3 flex items-center gap-3">
+            <span class="material-symbols-outlined text-amber-600 text-xl">schedule</span>
+            <p class="text-xs text-amber-700 dark:text-amber-400 font-medium">ستتمكن من الوصول للمحتوى فور موافقة المحاضر على طلبك.</p>
+          </div>
         </div>
 
         <!-- Instructor Info -->
         <div class="bg-bg-surface p-6 rounded-xl shadow-sm border border-border-base transition-colors duration-300">
           <h3 class="text-lg font-bold mb-4 text-text-main">عن المحاضر</h3>
           <div class="flex flex-col items-center text-center pb-4 border-b border-border-base">
-            <img alt="Instructor" class="w-20 h-20 rounded-full mb-3 object-cover border-2 border-border-base" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDKKpNRAatQPE-iBEdCirlufnf55EQBhXPLUNrJkRf1JItGcKsgD_-g1hA0F8zsk-mRGAf_UTjuA0QFpppsJ05bjz7GKT6iil3Ejj-phm54czqSJrNc2iaYOPwADlafdIJuxGp6rt-U44hX8uGHqPKK6tlsPvnS2zWT7TPq7EmmdxSREKUY-Eid_WtkDHI64NfGttaxu3MG9fdO2427K6ZQ2CQAlB5TkK3U0E-YYedCQ98jrPHwLh0RuaZ_CZVqswRsEkFbdCTDEtbG"/>
-            <h4 class="font-bold text-text-main">د. محمد القحطاني</h4>
-            <p class="text-sm text-text-muted">أستاذ مشارك في علم الاقتصاد</p>
+            <div class="w-20 h-20 rounded-full mb-3 overflow-hidden border-2 border-border-base bg-bg-surface-hover flex items-center justify-center">
+              <span v-if="!course.instructor_image" class="material-symbols-outlined text-4xl text-text-muted">person</span>
+              <img v-else alt="Instructor" class="w-full h-full object-cover" :src="course.instructor_image"/>
+            </div>
+            <h4 class="font-bold text-text-main">{{ course.instructor?.name || course.instructor_name || 'محاضر' }}</h4>
+            <p class="text-sm text-text-muted">محاضر المقرر</p>
           </div>
           <p class="mt-4 text-sm text-text-muted leading-relaxed text-right">
-            خبير في الاقتصاد الكلي والجزئي مع أكثر من 15 عاماً من الخبرة في التدريس الأكاديمي والبحوث الاقتصادية بجامعة الملك سعود.
+            {{ course.instructor_bio || 'لا توجد نبذة مختصرة عن المحاضر حتى الآن.' }}
           </p>
           <div class="mt-4 flex gap-2 justify-center">
             <button class="p-2 rounded-full bg-bg-surface-hover text-text-muted hover:text-primary transition-colors cursor-pointer border border-transparent hover:border-primary/20">
@@ -117,13 +149,16 @@
           </div>
         </div>
 
-        <!-- Notification -->
-        <div class="bg-amber-50 dark:bg-amber-900/10 border-r-4 border-amber-500 p-4 rounded-lg">
-          <div class="flex items-start gap-3">
-            <span class="material-symbols-outlined text-amber-600">event_available</span>
+        <!-- Course Stats -->
+        <div v-if="course.is_enrolled" class="bg-bg-surface p-4 rounded-xl shadow-sm border border-border-base transition-colors duration-300">
+          <div class="grid grid-cols-2 gap-4 text-center">
             <div>
-              <p class="text-amber-800 dark:text-amber-400 font-bold text-sm">الموعد النهائي القادم</p>
-              <p class="text-amber-700 dark:text-amber-500 text-xs mt-1">واجب الفصل الرابع: الثلاثاء، 25 أكتوبر</p>
+              <p class="text-2xl font-bold text-primary">{{ course.lectures?.length || course.total_lectures || 0 }}</p>
+              <p class="text-xs text-text-muted">محاضرة</p>
+            </div>
+            <div>
+              <p class="text-2xl font-bold text-primary">{{ course.quizzes?.length || 0 }}</p>
+              <p class="text-xs text-text-muted">اختبار</p>
             </div>
           </div>
         </div>
@@ -133,133 +168,82 @@
       <div class="lg:col-span-8">
         <div class="flex justify-between items-center mb-6">
           <h2 class="text-xl font-bold text-text-main">مخطط المادة الدراسية</h2>
-          <div class="flex items-center gap-2 cursor-pointer hover:text-primary transition-colors group">
-            <span class="text-sm text-text-muted group-hover:text-primary">توسيع الكل</span>
-            <span class="material-symbols-outlined text-text-muted group-hover:text-primary">unfold_more</span>
-          </div>
+          <span class="text-sm text-text-muted">{{ course.lectures?.length || 0 }} محاضرة</span>
         </div>
 
         <div class="space-y-4">
-          <!-- Module 1 -->
-          <div class="bg-bg-surface border border-border-base rounded-xl overflow-hidden transition-colors duration-300">
-            <button class="w-full flex items-center justify-between p-5 hover:bg-bg-surface-hover transition-colors cursor-pointer">
-              <div class="flex items-center gap-4">
-                <div class="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                  <span class="material-symbols-outlined text-green-600">check_circle</span>
-                </div>
-                <div class="text-right">
-                  <h4 class="font-bold text-text-main">الوحدة الأولى: مدخل إلى علم الاقتصاد</h4>
-                  <p class="text-xs text-text-muted mt-1">4 دروس • 1 اختبار قصير</p>
-                </div>
+          <!-- When Enrolled but no lectures yet -->
+          <div v-if="course.is_enrolled && (!course.lectures || course.lectures.length === 0)" class="bg-bg-surface border border-border-base border-dashed rounded-xl p-12 flex flex-col items-center justify-center text-center">
+            <span class="material-symbols-outlined text-6xl text-text-muted mb-4 opacity-50">menu_book</span>
+            <h3 class="text-xl font-bold text-text-main mb-2">المحتوى قيد التجهيز</h3>
+            <p class="text-text-muted">لم يتم إضافة أي دروس لهذا المقرر حتى الآن.</p>
+          </div>
+
+          <!-- When NOT Enrolled: Locked State -->
+          <div v-else-if="!course.is_enrolled" class="relative bg-bg-surface border border-border-base rounded-xl overflow-hidden min-h-[400px] flex flex-col items-center justify-center text-center p-8">
+            <div class="absolute inset-0 bg-gradient-to-b from-transparent to-bg-surface/90 z-10"></div>
+            <!-- Fake blurred content behind -->
+            <div class="absolute top-8 left-8 right-8 space-y-4 opacity-20 pointer-events-none blur-[2px]">
+              <div class="h-16 bg-border-base rounded-xl w-full"></div>
+              <div class="h-16 bg-border-base rounded-xl w-full"></div>
+              <div class="h-16 bg-border-base rounded-xl w-full"></div>
+            </div>
+            
+            <div class="relative z-20 flex flex-col items-center max-w-sm mt-10">
+              <div class="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mb-6">
+                <span v-if="enrollmentStatus === 'pending'" class="material-symbols-outlined text-4xl text-amber-500">hourglass_top</span>
+                <span v-else class="material-symbols-outlined text-4xl text-primary">lock</span>
               </div>
-              <span class="material-symbols-outlined text-text-muted">expand_less</span>
-            </button>
-            <div class="p-2 border-t border-border-base">
-              <div class="space-y-1">
-                <div class="flex items-center justify-between p-3 rounded-lg hover:bg-bg-surface-hover transition-colors cursor-pointer group">
-                  <div class="flex items-center gap-3">
-                    <span class="material-symbols-outlined text-text-muted group-hover:text-primary">play_circle_outline</span>
-                    <span class="text-sm text-text-main">تعريف علم الاقتصاد والمشكلة الاقتصادية</span>
-                  </div>
-                  <span class="text-xs text-green-500 font-medium">مكتمل</span>
-                </div>
-                <div class="flex items-center justify-between p-3 rounded-lg hover:bg-bg-surface-hover transition-colors cursor-pointer group">
-                  <div class="flex items-center gap-3">
-                    <span class="material-symbols-outlined text-text-muted group-hover:text-primary">description</span>
-                    <span class="text-sm text-text-main">منحنى إمكانيات الإنتاج</span>
-                  </div>
-                  <span class="text-xs text-green-500 font-medium">مكتمل</span>
-                </div>
-                <div class="flex items-center justify-between p-3 rounded-lg hover:bg-bg-surface-hover transition-colors cursor-pointer group">
-                  <div class="flex items-center gap-3">
-                    <span class="material-symbols-outlined text-text-muted group-hover:text-primary">quiz</span>
-                    <span class="text-sm text-text-main">اختبار تقييمي: أساسيات الاقتصاد</span>
-                  </div>
-                  <span class="text-xs text-green-500 font-medium">9/10</span>
-                </div>
-              </div>
+              <h3 v-if="enrollmentStatus === 'pending'" class="text-2xl font-bold text-text-main mb-3">طلبك قيد المراجعة</h3>
+              <h3 v-else class="text-2xl font-bold text-text-main mb-3">محتوى المقرر مقفل</h3>
+              <p v-if="enrollmentStatus === 'pending'" class="text-text-muted mb-8 leading-relaxed">طلب انضمامك لهذا المقرر قيد المراجعة من قبل المحاضر. سيتم إخطارك فور القبول.</p>
+              <p v-else class="text-text-muted mb-8 leading-relaxed">قم بالانضمام للمقرر الآن لتتمكن من فتح جميع الدروس والمحاضرات والاختبارات المتاحة وتتبع تقدمك.</p>
+              <button v-if="enrollmentStatus !== 'pending'" @click="enrollInCourse" :disabled="isEnrolling" class="w-full bg-primary text-white py-3 px-8 rounded-lg font-bold hover:bg-blue-700 transition-colors flex justify-center items-center gap-2 shadow-lg shadow-primary/20 disabled:opacity-50 cursor-pointer">
+                <span v-if="isEnrolling" class="size-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                <span v-else class="material-symbols-outlined">add_task</span>
+                انضم للمقرر الآن
+              </button>
             </div>
           </div>
 
-          <!-- Module 2 (Active) -->
-          <div class="bg-bg-surface border border-primary/30 rounded-xl overflow-hidden ring-1 ring-primary/10 transition-colors duration-300">
-            <button class="w-full flex items-center justify-between p-5 bg-primary/5 hover:bg-primary/10 transition-colors cursor-pointer">
-              <div class="flex items-center gap-4">
-                <div class="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
-                  <span class="material-symbols-outlined text-primary">pending</span>
-                </div>
-                <div class="text-right">
-                  <h4 class="font-bold text-primary">الوحدة الثانية: قوى السوق (العرض والطلب)</h4>
-                  <p class="text-xs text-primary/70 mt-1">6 دروس • 2 واجب منزلي</p>
-                </div>
+          <!-- Real Lecture List -->
+          <template v-else>
+            <RouterLink 
+              v-for="(lecture, index) in course.lectures" 
+              :key="lecture.id" 
+              :to="`/student/courses/${course.id}/lecture/${lecture.id}`"
+              class="bg-bg-surface border border-border-base rounded-xl overflow-hidden transition-all duration-300 hover:border-primary/50 hover:shadow-md flex items-center gap-4 p-5 group cursor-pointer"
+            >
+              <!-- Order Number -->
+              <div class="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 font-bold text-sm"
+                :class="lecture.is_completed ? 'bg-green-100 text-green-600 dark:bg-green-900/20' : 'bg-primary/10 text-primary'">
+                <span v-if="lecture.is_completed" class="material-symbols-outlined text-xl">check_circle</span>
+                <span v-else>{{ index + 1 }}</span>
               </div>
-              <span class="material-symbols-outlined text-primary">expand_less</span>
-            </button>
-            <div class="p-2 border-t border-border-base">
-              <div class="space-y-1">
-                <div class="flex items-center justify-between p-3 rounded-lg bg-primary/5 border-r-4 border-primary cursor-pointer">
-                  <div class="flex items-center gap-3">
-                    <span class="material-symbols-outlined text-primary">play_circle_filled</span>
-                    <span class="text-sm font-bold text-primary">قانون الطلب ومحدداته</span>
-                  </div>
-                  <span class="text-xs bg-primary text-white px-2 py-0.5 rounded">جاري الآن</span>
-                </div>
-                <div class="flex items-center justify-between p-3 rounded-lg hover:bg-bg-surface-hover transition-colors cursor-pointer group">
-                  <div class="flex items-center gap-3">
-                    <span class="material-symbols-outlined text-text-muted group-hover:text-primary">play_circle_outline</span>
-                    <span class="text-sm text-text-main">قانون العرض ومحدداته</span>
-                  </div>
-                  <span class="text-xs text-text-muted">15 دقيقة</span>
-                </div>
-                <div class="flex items-center justify-between p-3 rounded-lg hover:bg-bg-surface-hover transition-colors cursor-pointer group">
-                  <div class="flex items-center gap-3">
-                    <span class="material-symbols-outlined text-text-muted group-hover:text-primary">analytics</span>
-                    <span class="text-sm text-text-main">توازن السوق وأثر التغيرات</span>
-                  </div>
-                  <span class="text-xs text-text-muted">مقال</span>
-                </div>
-                <div class="flex items-center justify-between p-3 rounded-lg hover:bg-bg-surface-hover transition-colors cursor-pointer group opacity-60">
-                  <div class="flex items-center gap-3">
-                    <span class="material-symbols-outlined text-text-muted">lock</span>
-                    <span class="text-sm text-text-main">تطبيقات عملية على توازن السوق</span>
-                  </div>
-                  <span class="text-xs text-text-muted">مقفل</span>
-                </div>
-              </div>
-            </div>
-          </div>
 
-          <!-- Module 3 -->
-          <div class="bg-bg-surface border border-border-base rounded-xl overflow-hidden opacity-75 transition-colors duration-300">
-            <button class="w-full flex items-center justify-between p-5 hover:bg-bg-surface-hover transition-colors cursor-pointer">
-              <div class="flex items-center gap-4">
-                <div class="w-10 h-10 rounded-lg bg-bg-surface-hover flex items-center justify-center">
-                  <span class="material-symbols-outlined text-text-muted">lock</span>
-                </div>
-                <div class="text-right">
-                  <h4 class="font-bold text-text-muted">الوحدة الثالثة: مرونات الطلب والعرض</h4>
-                  <p class="text-xs text-text-muted mt-1">3 دروس • 1 مشروع بحثي</p>
+              <!-- Lecture Info -->
+              <div class="flex-1 min-w-0">
+                <h4 class="font-bold text-text-main group-hover:text-primary transition-colors truncate">{{ lecture.title }}</h4>
+                <div class="flex items-center gap-4 mt-1 text-xs text-text-muted">
+                  <span v-if="lecture.video_duration" class="flex items-center gap-1">
+                    <span class="material-symbols-outlined text-sm">timer</span>
+                    {{ Math.ceil(lecture.video_duration / 60) }} دقيقة
+                  </span>
+                  <span v-if="lecture.video_path || lecture.video_url" class="flex items-center gap-1">
+                    <span class="material-symbols-outlined text-sm">play_circle</span>
+                    فيديو
+                  </span>
+                  <span v-if="lecture.attachment" class="flex items-center gap-1">
+                    <span class="material-symbols-outlined text-sm">attach_file</span>
+                    مرفق
+                  </span>
                 </div>
               </div>
-              <span class="material-symbols-outlined text-text-muted">expand_more</span>
-            </button>
-          </div>
 
-          <!-- Module 4 -->
-          <div class="bg-bg-surface border border-border-base rounded-xl overflow-hidden opacity-75 transition-colors duration-300">
-            <button class="w-full flex items-center justify-between p-5 hover:bg-bg-surface-hover transition-colors cursor-pointer">
-              <div class="flex items-center gap-4">
-                <div class="w-10 h-10 rounded-lg bg-bg-surface-hover flex items-center justify-center">
-                  <span class="material-symbols-outlined text-text-muted">lock</span>
-                </div>
-                <div class="text-right">
-                  <h4 class="font-bold text-text-muted">الوحدة الرابعة: سلوك المستهلك</h4>
-                  <p class="text-xs text-text-muted mt-1">5 دروس • اختبار منتصف الفصل</p>
-                </div>
-              </div>
-              <span class="material-symbols-outlined text-text-muted">expand_more</span>
-            </button>
-          </div>
+              <!-- Arrow -->
+              <span class="material-symbols-outlined text-text-muted group-hover:text-primary transition-colors shrink-0">arrow_back_ios</span>
+            </RouterLink>
+          </template>
         </div>
 
         <!-- Help Box -->
@@ -280,87 +264,53 @@
       </div>
     </div>
 
-    <!-- Quiz Tab Content (Inline) -->
-    <div v-else-if="activeTab === 'quizzes'" class="w-full flex flex-col items-center justify-start py-8">
-      <div class="w-full max-w-[800px] flex flex-col gap-6">
-        <!-- Progress Card -->
-        <div class="w-full bg-bg-surface p-6 rounded-xl shadow-sm border border-border-base transition-colors duration-300">
-          <div class="flex flex-col gap-3">
-            <div class="flex justify-between items-center">
-              <p class="text-text-main text-base font-semibold leading-normal">التقدم في الاختبار</p>
-              <p class="text-primary text-sm font-bold leading-normal">25% مكتمل</p>
-            </div>
-            <div class="h-2.5 w-full bg-bg-base rounded-full overflow-hidden">
-              <div class="h-full bg-primary transition-all duration-500 rounded-full" style="width: 25%;"></div>
-            </div>
-            <div class="flex justify-between">
-              <p class="text-text-muted text-sm font-normal">السؤال ٥ من ٢٠</p>
-              <p class="text-text-muted text-sm font-normal">باقي ١٥ سؤالاً</p>
-            </div>
-          </div>
+    <!-- Quiz Tab Content -->
+    <div v-else-if="activeTab === 'quizzes'" class="w-full flex flex-col justify-start py-8">
+      <div class="w-full max-w-[800px] flex flex-col gap-6 mx-auto">
+        <!-- Locked State if not enrolled -->
+        <div v-if="!course.is_enrolled" class="bg-bg-surface border border-border-base rounded-xl p-12 flex flex-col items-center justify-center text-center">
+          <span class="material-symbols-outlined text-6xl text-primary mb-4">lock</span>
+          <h3 class="text-xl font-bold text-text-main mb-2">الاختبارات مقفلة</h3>
+          <p class="text-text-muted mb-6">قم بالانضمام للمقرر أولاً للوصول إلى الاختبارات وتقييم مستواك.</p>
+          <button @click="enrollInCourse" :disabled="isEnrolling" class="bg-primary text-white py-3 px-8 rounded-lg font-bold hover:bg-blue-700 transition-colors flex justify-center items-center gap-2 shadow-lg shadow-primary/20 disabled:opacity-50 cursor-pointer">
+             <span v-if="isEnrolling" class="size-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+             <span v-else class="material-symbols-outlined">add_task</span>
+             انضم للمقرر الآن
+          </button>
         </div>
 
-        <!-- Question Card -->
-        <div class="@container w-full">
-          <div class="flex flex-col items-stretch justify-start rounded-xl shadow-lg bg-bg-surface border border-border-base overflow-hidden transition-colors duration-300">
-            <!-- <div class="w-full bg-center bg-no-repeat aspect-[21/9] bg-cover bg-primary/5 border-b border-border-base flex items-center justify-center" data-alt="Programming code visualization background" style="background-image: linear-gradient(135deg, rgba(19, 91, 236, 0.13) 0%, rgba(255, 255, 255, 0) 100%);">
-              <span class="material-symbols-outlined text-primary/30 text-6xl">code</span>
-            </div> -->
-            <div class="flex w-full min-w-72 grow flex-col items-stretch justify-center gap-4 p-8">
-              <div class="inline-flex items-center self-start px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary mb-2">
-                اختيار من متعدد
+        <!-- Empty State if no quizzes -->
+        <div v-else-if="!course.quizzes || course.quizzes.length === 0" class="bg-bg-surface border border-border-base border-dashed rounded-xl p-12 flex flex-col items-center justify-center text-center">
+            <span class="material-symbols-outlined text-6xl text-text-muted mb-4 opacity-50">quiz</span>
+            <h3 class="text-xl font-bold text-text-main mb-2">لا يوجد اختبارات</h3>
+            <p class="text-text-muted">لم يتم إضافة أي اختبارات لهذا المقرر حتى الآن.</p>
+        </div>
+
+        <!-- Quizzes List -->
+        <template v-else>
+          <div v-for="quiz in course.quizzes" :key="quiz.id" class="bg-bg-surface border border-border-base rounded-xl p-6 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 hover:border-primary/50 hover:shadow-md transition-all">
+            <div class="flex items-start gap-4">
+              <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-primary text-2xl">quiz</span>
               </div>
-              <h3 class="text-text-main text-xl lg:text-2xl font-bold leading-relaxed tracking-tight">
-                ما هي لغة البرمجة المستخدمة في تطوير تطبيقات الأندرويد بشكل أساسي وتعتبر اللغة الرسمية المدعومة من جوجل حالياً؟
-              </h3>
-              <p class="text-text-muted text-base font-normal">اختر إجابة واحدة صحيحة من الخيارات التالية:</p>
+              <div>
+                <h4 class="text-lg font-bold text-text-main mb-1">{{ quiz.title || 'اختبار تقييمي' }}</h4>
+                <div class="flex items-center gap-4 text-sm text-text-muted">
+                  <span class="flex items-center gap-1"><span class="material-symbols-outlined text-base">timer</span> {{ quiz.duration_minutes || 30 }} دقيقة</span>
+                  <span class="flex items-center gap-1"><span class="material-symbols-outlined text-base">format_list_numbered</span> {{ quiz.questions_count || 0 }} سؤال</span>
+                </div>
+              </div>
             </div>
             
-            <div class="flex flex-col gap-4 p-8 pt-0 radio-dot">
-              <label class="group flex items-center gap-4 rounded-xl border-2 border-solid border-border-base p-4 flex-row-reverse cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-all">
-                <input checked class="h-6 w-6 border-2 border-border-base bg-transparent text-transparent checked:border-primary checked:bg-[image:--radio-dot-svg] focus:outline-none focus:ring-0 focus:ring-offset-0 checked:focus:border-primary appearance-none" name="quiz-option" type="radio"/>
-                <div class="flex grow flex-col">
-                  <p class="text-text-main text-base font-semibold group-hover:text-primary transition-colors">Kotlin (كوتلن)</p>
-                </div>
-              </label>
-              <label class="group flex items-center gap-4 rounded-xl border-2 border-solid border-border-base p-4 flex-row-reverse cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-all">
-                <input class="h-6 w-6 border-2 border-border-base bg-transparent text-transparent checked:border-primary checked:bg-[image:--radio-dot-svg] focus:outline-none focus:ring-0 focus:ring-offset-0 checked:focus:border-primary appearance-none" name="quiz-option" type="radio"/>
-                <div class="flex grow flex-col">
-                  <p class="text-text-main text-base font-semibold group-hover:text-primary transition-colors">Swift (سويفت)</p>
-                </div>
-              </label>
-              <label class="group flex items-center gap-4 rounded-xl border-2 border-solid border-border-base p-4 flex-row-reverse cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-all">
-                <input class="h-6 w-6 border-2 border-border-base bg-transparent text-transparent checked:border-primary checked:bg-[image:--radio-dot-svg] focus:outline-none focus:ring-0 focus:ring-offset-0 checked:focus:border-primary appearance-none" name="quiz-option" type="radio"/>
-                <div class="flex grow flex-col">
-                  <p class="text-text-main text-base font-semibold group-hover:text-primary transition-colors">Python (بايثون)</p>
-                </div>
-              </label>
-              <label class="group flex items-center gap-4 rounded-xl border-2 border-solid border-border-base p-4 flex-row-reverse cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-all">
-                <input class="h-6 w-6 border-2 border-border-base bg-transparent text-transparent checked:border-primary checked:bg-[image:--radio-dot-svg] focus:outline-none focus:ring-0 focus:ring-offset-0 checked:focus:border-primary appearance-none" name="quiz-option" type="radio"/>
-                <div class="flex grow flex-col">
-                  <p class="text-text-main text-base font-semibold group-hover:text-primary transition-colors">C++ (سي بلس بلس)</p>
-                </div>
-              </label>
-            </div>
+            <RouterLink 
+              :to="`/student/quiz/${quiz.id}`" 
+              class="w-full sm:w-auto px-6 py-3 bg-primary text-white font-bold rounded-lg hover:bg-primary/90 transition-all flex justify-center items-center gap-2"
+            >
+              <span class="material-symbols-outlined">play_arrow</span>
+              بدء الاختبار
+            </RouterLink>
           </div>
-        </div>
-
-        <!-- Navigation Buttons -->
-        <div class="flex items-center justify-between mt-4">
-          <button class="flex items-center justify-center gap-2 min-w-[120px] px-6 h-12 rounded-lg border-2 border-border-base text-text-main text-base font-bold hover:bg-bg-surface-hover transition-colors cursor-pointer">
-            <span class="material-symbols-outlined">arrow_forward</span>
-            <span>السابق</span>
-          </button>
-          <div class="flex gap-4">
-            <button class="flex items-center justify-center gap-2 min-w-[120px] px-6 h-12 rounded-lg border-2 border-primary/20 bg-primary/5 text-primary text-base font-bold hover:bg-primary/10 transition-colors cursor-pointer">
-              <span>تخطي</span>
-            </button>
-            <button class="flex items-center justify-center gap-2 min-w-[140px] px-8 h-12 rounded-lg bg-primary text-white text-base font-bold hover:bg-primary/90 shadow-md shadow-primary/20 transition-all cursor-pointer">
-              <span>التالي</span>
-              <span class="material-symbols-outlined">arrow_back</span>
-            </button>
-          </div>
-        </div>
+        </template>
       </div>
     </div>
 
@@ -368,14 +318,91 @@
     <div v-else-if="activeTab === 'assignments'" class="w-full py-8">
       <Assignments />
     </div>
+    </template>
+
+    <Toast :show="showToast" :title="toastTitle" :message="toastMessage" :type="toastType" @close="showToast = false" />
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { studentApi } from '@/api/student';
+import { coursesApi } from '@/api/courses';
+import { onMounted, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import Assignments from './Assignments.vue';
+import Toast from '@/components/common/Toast.vue';
 
-const activeTab = ref('content')
+const route = useRoute();
+const router = useRouter();
+const activeTab = ref('content');
+const course = ref(null);
+const isLoading = ref(true);
+const isEnrolling = ref(false);
+const enrollmentStatus = ref(null); // 'approved', 'pending', null
+
+const showToast = ref(false);
+const toastTitle = ref('');
+const toastMessage = ref('');
+const toastType = ref('error');
+
+const fetchCourse = async () => {
+  isLoading.value = true;
+  try {
+    const { data } = await studentApi.getCourseDetails(route.params.id);
+    course.value = data.data || data;
+    course.value.is_enrolled = true;
+    enrollmentStatus.value = 'approved';
+  } catch (error) {
+    if (error.response?.status === 403) {
+       // Check if the student enrollment is pending
+       const responseData = error.response?.data;
+       if (responseData?.enrollment_status === 'pending') {
+         enrollmentStatus.value = 'pending';
+       }
+
+       try {
+          const publicRes = await coursesApi.getCourse(route.params.id);
+          course.value = publicRes.data.data || publicRes.data;
+          course.value.is_enrolled = false;
+       } catch (innerErr) {
+          console.error('[CourseDetails] Failed to load public data:', innerErr);
+          course.value = null;
+       }
+    } else {
+       console.error('[CourseDetails] Failed to load:', error);
+       course.value = null;
+    }
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const enrollInCourse = async () => {
+    isEnrolling.value = true;
+    showToast.value = false;
+    try {
+        const { data } = await studentApi.enrollInCourse(course.value.id);
+        
+        toastType.value = 'success';
+        toastTitle.value = 'نجاح';
+        toastMessage.value = data.message || 'تم الانضمام للمقرر بنجاح! يمكنك الآن بدء التعلم.';
+        showToast.value = true;
+
+        await fetchCourse();
+    } catch (e) {
+        console.error("Enrollment failed", e);
+        toastType.value = 'error';
+        toastTitle.value = 'خطأ في التسجيل';
+        toastMessage.value = e.response?.data?.message || 'فشل التسجيل في المقرر، يرجى المحاولة لاحقاً';
+        showToast.value = true;
+    } finally {
+        isEnrolling.value = false;
+    }
+};
+
+onMounted(() => {
+  fetchCourse();
+});
 </script>
 
 <style scoped>

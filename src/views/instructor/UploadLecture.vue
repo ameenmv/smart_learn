@@ -109,7 +109,7 @@
                 type="file" 
                 ref="fileInput" 
                 class="hidden" 
-                accept="video/mp4,video/x-m4v,video/*" 
+                accept="video/mp4,video/webm,video/quicktime,video/x-matroska,video/x-m4v,video/*" 
                 @change="handleFileSelect"
               />
               <div 
@@ -119,7 +119,7 @@
                 <span class="material-symbols-outlined text-4xl text-primary">cloud_upload</span>
               </div>
               <h3 class="text-2xl font-black mb-2 text-text-main">قم برفع فيديو المحاضرة</h3>
-              <p class="text-text-muted mb-8">اسحب وأفلت الملف هنا أو انقر لاختيار ملف من جهازك. يدعم MP4, MKV, MOV بحد أقصى 2 جيجابايت.</p>
+              <p class="text-text-muted mb-8">اسحب وأفلت الملف هنا أو انقر لاختيار ملف من جهازك. يدعم MP4, MKV, MOV, WebM بحد أقصى 2 جيجابايت.</p>
             </div>
 
             <div v-else class="max-w-md mx-auto">
@@ -402,18 +402,25 @@
 </template>
 
 <script setup>
+import { coursesApi } from '@/api/courses';
 import { reactive, ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 const router = useRouter();
+const route = useRoute();
+
+// These should come from route query params, e.g. /instructor/lectures/upload?courseId=1&lectureId=2
+const courseId = ref(route.query.courseId || null);
+const lectureId = ref(route.query.lectureId || null);
+
 const currentStep = ref(2);
 const videoFile = ref(null);
 const uploadProgress = ref(0);
 const uploadSpeed = ref('0 MB/s');
-const remainingTime = ref('Calculating...');
+const remainingTime = ref('');
 const isSavingDraft = ref(false);
 const isPublishing = ref(false);
-let uploadInterval = null;
+let uploadCancelToken = null;
 
 const toast = reactive({
     show: false,
@@ -446,62 +453,129 @@ const handleDrop = (event) => {
   }
 };
 
-const startUpload = (file) => {
+const startUpload = async (file) => {
   videoFile.value = file;
   uploadProgress.value = 0;
-  
-  // Simulate upload process
-  uploadInterval = setInterval(() => {
-    if (uploadProgress.value < 100) {
-      const increment = Math.random() * 5 + 1; // Random increment between 1 and 6
-      uploadProgress.value = Math.min(100, Math.floor(uploadProgress.value + increment));
-      
-      // Update dummy stats
-      uploadSpeed.value = `${(Math.random() * 2 + 1).toFixed(1)} MB/s`;
-      const remainingSeconds = Math.floor((100 - uploadProgress.value) / 2); // Roughly estimate
-      remainingTime.value = `تبقي ${Math.ceil(remainingSeconds / 60)} دقائق`;
-      
-    } else {
-      clearInterval(uploadInterval);
-      uploadSpeed.value = 'Complete';
-      remainingTime.value = 'تم التحميل';
-    }
-  }, 500);
+
+  if (!lectureId.value) {
+    // If no lectureId yet, just store the file for later
+    uploadProgress.value = 100;
+    uploadSpeed.value = 'Complete';
+    remainingTime.value = 'جاهز للرفع';
+    return;
+  }
+
+  try {
+    const formData = new FormData();
+    formData.append('video_path', file);
+
+    const startTime = Date.now();
+
+    await coursesApi.uploadLectureVideo(lectureId.value, formData, {
+      onUploadProgress: (progressEvent) => {
+        const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+        uploadProgress.value = percent;
+
+        // Calculate speed
+        const elapsed = (Date.now() - startTime) / 1000;
+        const speedMBps = (progressEvent.loaded / (1024 * 1024)) / elapsed;
+        uploadSpeed.value = `${speedMBps.toFixed(1)} MB/s`;
+
+        // Estimate remaining
+        if (speedMBps > 0) {
+          const remainingBytes = progressEvent.total - progressEvent.loaded;
+          const remainingSec = remainingBytes / (1024 * 1024) / speedMBps;
+          remainingTime.value = remainingSec > 60
+            ? `تبقى ${Math.ceil(remainingSec / 60)} دقائق`
+            : `تبقى ${Math.ceil(remainingSec)} ثانية`;
+        }
+      }
+    });
+
+    uploadSpeed.value = 'Complete';
+    remainingTime.value = 'تم التحميل';
+    showToast('تم الرفع', 'تم رفع الفيديو بنجاح');
+  } catch (error) {
+    console.error('[UploadLecture] Video upload failed:', error);
+    showToast('خطأ', 'فشل رفع الفيديو. حاول مرة أخرى.', 'error');
+    videoFile.value = null;
+    uploadProgress.value = 0;
+  }
 };
 
 const cancelUpload = () => {
-  if (uploadInterval) clearInterval(uploadInterval);
   videoFile.value = null;
   uploadProgress.value = 0;
   uploadSpeed.value = '0 MB/s';
   remainingTime.value = '';
 };
 
-const saveDraft = () => {
+const saveDraft = async () => {
     isSavingDraft.value = true;
-    setTimeout(() => {
-        isSavingDraft.value = false;
-        showToast('تم الحفظ', 'تم حفظ مسودة المحاضرة بنجاح');
-    }, 1500);
+    try {
+      if (!courseId.value) {
+        showToast('تنبيه', 'يرجى اختيار مقرر أولاً', 'error');
+        return;
+      }
+      // If we have a lectureId, just show success. Otherwise, create the lecture.
+      if (!lectureId.value) {
+        const { data } = await coursesApi.createLecture(courseId.value, {
+          title: 'محاضرة جديدة',
+          description: '',
+          content: '',
+          status: 'draft',
+          order: 1
+        });
+        const lecture = data.data || data;
+        lectureId.value = lecture.id;
+      }
+      showToast('تم الحفظ', 'تم حفظ مسودة المحاضرة بنجاح');
+    } catch (error) {
+      console.error('[UploadLecture] Save draft failed:', error);
+      showToast('خطأ', 'فشل حفظ المسودة', 'error');
+    } finally {
+      isSavingDraft.value = false;
+    }
 };
 
-const handleSaveAssignment = () => {
-    showToast('تم الحفظ', 'تم حفظ الواجب للمحاضرة');
-    setTimeout(() => {
-        currentStep.value = 4;
-    }, 1000);
+const handleSaveAssignment = async () => {
+    if (!lectureId.value) {
+      showToast('تنبيه', 'يجب حفظ المحاضرة أولاً', 'error');
+      return;
+    }
+    try {
+      await coursesApi.createAssignment(lectureId.value, {
+        title: 'واجب المحاضرة',
+        description: '',
+        max_grade: 100,
+        due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+      });
+      showToast('تم الحفظ', 'تم حفظ الواجب للمحاضرة');
+      setTimeout(() => {
+          currentStep.value = 4;
+      }, 1000);
+    } catch (error) {
+      console.error('[UploadLecture] Save assignment failed:', error);
+      showToast('خطأ', 'فشل حفظ الواجب', 'error');
+    }
 };
 
-const publishCourse = () => {
+const publishCourse = async () => {
     isPublishing.value = true;
-    setTimeout(() => {
-        isPublishing.value = false;
-        showToast('تم النشر', 'تم نشر المساق بنجاح');
-        // Optionally redirect or clear form
-        setTimeout(() => {
-             // router.push('/instructor/courses'); // Example
-        }, 2000);
-    }, 2000);
+    try {
+      if (courseId.value) {
+        await coursesApi.updateCourse(courseId.value, { status: 'active' });
+      }
+      showToast('تم النشر', 'تم نشر المساق بنجاح');
+      setTimeout(() => {
+        router.push('/instructor/courses');
+      }, 2000);
+    } catch (error) {
+      console.error('[UploadLecture] Publish failed:', error);
+      showToast('خطأ', 'فشل النشر', 'error');
+    } finally {
+      isPublishing.value = false;
+    }
 };
 </script>
 

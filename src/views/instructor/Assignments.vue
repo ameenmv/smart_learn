@@ -1,218 +1,322 @@
 <template>
   <div class="flex flex-col min-h-screen bg-bg-base text-text-main font-sans transition-colors duration-300">
-    <header class="h-16 flex items-center justify-between border-b border-solid border-border-base bg-bg-surface px-6 sticky top-0 z-40 transition-colors duration-300">
-      <div class="flex items-center gap-2">
-        <a class="text-text-muted text-sm font-medium hover:text-primary transition-colors" href="#">المقررات الدراسية</a>
-        <span class="text-text-muted material-symbols-outlined text-sm">chevron_left</span>
-        <a class="text-text-muted text-sm font-medium hover:text-primary transition-colors" href="#">علوم الحاسب (CS101)</a>
-        <span class="text-text-muted material-symbols-outlined text-sm">chevron_left</span>
-        <span class="text-primary text-sm font-bold">تصحيح الواجب الدراسي: أساسيات الخوارزميات</span>
+    <!-- Header -->
+    <header
+      class="h-16 flex items-center justify-between border-b border-solid border-border-base bg-bg-surface px-6 sticky top-0 z-40 transition-colors duration-300">
+      <div class="flex items-center gap-2 text-sm text-text-muted">
+        <router-link class="hover:text-primary transition-colors" to="/instructor/dashboard">الرئيسية</router-link>
+        <span class="material-symbols-outlined text-xs">chevron_left</span>
+        <span class="text-primary text-sm font-bold">تصحيح الواجب</span>
       </div>
-      <div class="flex items-center gap-4">
-        <div class="flex gap-4">
-          <div class="flex items-center gap-2 px-3 py-1.5 bg-primary/10 rounded-lg border border-primary/20">
-            <span class="text-primary text-sm font-bold">15 / 30</span>
-            <span class="text-text-main text-xs font-medium">تم تصحيحه</span>
-          </div>
-          <div class="flex items-center gap-2 px-3 py-1.5 bg-orange-100 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800">
-            <span class="text-orange-600 dark:text-orange-400 text-sm font-bold">15</span>
-            <span class="text-text-main text-xs font-medium">قيد الانتظار</span>
-          </div>
-        </div>
-        <div class="w-px h-6 bg-border-base"></div>
-        <button class="p-2 rounded-lg bg-bg-base text-text-main hover:bg-bg-surface-hover transition-colors">
-          <span class="material-symbols-outlined">notifications</span>
-        </button>
+      <div class="flex items-center gap-3">
+        <router-link to="/instructor/courses"
+          class="px-5 py-2 rounded-lg border border-border-base font-bold text-sm hover:bg-bg-base transition-colors cursor-pointer text-text-main">
+          العودة
+        </router-link>
       </div>
     </header>
+
+    <!-- Toast -->
+    <Transition name="toast">
+      <div v-if="toast.show"
+        class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 px-6 py-4 rounded-xl shadow-xl border backdrop-blur-md transition-all duration-300 min-w-[320px] cursor-pointer hover:scale-[1.02]"
+        :class="toast.type === 'success' ? 'bg-emerald-50/90 border-emerald-200 dark:bg-emerald-900/90 dark:border-emerald-800' : 'bg-red-50/90 border-red-200 dark:bg-red-900/90 dark:border-red-800'"
+        @click="hideToast">
+        <div class="p-2 rounded-full"
+          :class="toast.type === 'success' ? 'bg-emerald-100 dark:bg-emerald-800 text-emerald-600 dark:text-emerald-200' : 'bg-red-100 dark:bg-red-800 text-red-600 dark:text-red-200'">
+          <span class="material-symbols-outlined text-xl">{{ toast.type === 'success' ? 'check_circle' : 'error'
+          }}</span>
+        </div>
+        <div class="flex flex-col flex-1">
+          <h4 class="font-bold text-sm"
+            :class="toast.type === 'success' ? 'text-emerald-900 dark:text-emerald-100' : 'text-red-900 dark:text-red-100'">
+            {{ toast.title }}</h4>
+          <p class="text-xs opacity-90"
+            :class="toast.type === 'success' ? 'text-emerald-800 dark:text-emerald-200' : 'text-red-800 dark:text-red-200'">
+            {{ toast.message }}</p>
+        </div>
+      </div>
+    </Transition>
+
+    <!-- Main -->
     <main class="flex flex-1 overflow-hidden h-[calc(100vh-64px)]">
-      <div class="flex-1 flex flex-col min-w-0 bg-bg-surface border-l border-border-base transition-colors duration-300">
-        <div class="p-4 flex flex-col gap-4 border-b border-border-base">
+      <!-- Submissions List -->
+      <div
+        class="flex-1 flex flex-col min-w-0 bg-bg-surface border-l border-border-base transition-colors duration-300">
+        <div class="p-4 border-b border-border-base">
           <div class="flex gap-4 items-center">
-            <label class="flex-1 h-11 relative">
-              <span class="absolute right-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-text-muted">search</span>
-              <input class="w-full h-full pr-11 pl-4 rounded-lg text-text-main border-none bg-bg-base focus:ring-2 focus:ring-primary/50 text-sm placeholder:text-text-muted" placeholder="البحث عن طالب بالاسم أو الرقم الجامعي..." value=""/>
-            </label>
-            <button class="flex items-center gap-2 px-4 py-2.5 bg-bg-base rounded-lg text-sm font-medium text-text-main hover:bg-bg-surface-hover transition-colors">
-              <span class="material-symbols-outlined text-lg">filter_list</span>
-              تصفية
-            </button>
-            <div class="h-6 w-px bg-border-base mx-2"></div>
-            <button @click="router.push('/instructor/assignments/create')" class="flex items-center gap-2 px-4 py-2.5 bg-primary text-white rounded-lg text-sm font-bold hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20 cursor-pointer">
-              <span class="material-symbols-outlined text-lg">add</span>
-              إنشاء واجب جديد
-            </button>
-          </div>
-          <div class="flex gap-3 flex-wrap">
-            <button class="flex h-8 items-center gap-2 rounded-full bg-primary text-white px-4 text-xs font-bold shadow-md shadow-primary/20">الكل (30)</button>
-            <button class="flex h-8 items-center gap-2 rounded-full bg-bg-base px-4 text-xs font-medium text-text-main hover:bg-bg-surface-hover transition-colors">تم التسليم (25)</button>
-            <button class="flex h-8 items-center gap-2 rounded-full bg-bg-base px-4 text-xs font-medium text-red-500 hover:bg-bg-surface-hover transition-colors">متأخر (5)</button>
-            <button class="flex h-8 items-center gap-2 rounded-full bg-bg-base px-4 text-xs font-medium text-text-main hover:bg-bg-surface-hover transition-colors">تم التصحيح (15)</button>
+            <div class="relative flex-1">
+              <span
+                class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-text-muted text-lg">search</span>
+              <input v-model="searchQuery"
+                class="w-full pr-10 pl-4 h-11 bg-bg-base border-none rounded-xl text-sm text-text-main placeholder:text-text-muted focus:ring-2 focus:ring-primary outline-none"
+                placeholder="بحث عن طالب..." type="text" />
+            </div>
           </div>
         </div>
-        <div class="overflow-y-auto flex-1">
+
+        <!-- No Assignment Selected -->
+        <div v-if="noAssignment" class="flex-1 flex flex-col items-center justify-center text-center p-8">
+          <div class="size-20 rounded-full bg-primary/10 flex items-center justify-center mb-5">
+            <span class="material-symbols-outlined text-primary text-4xl">assignment</span>
+          </div>
+          <h3 class="text-xl font-black text-text-main mb-2">لم يتم اختيار واجب</h3>
+          <p class="text-text-muted font-medium mb-6 max-w-sm">يمكنك الوصول لهذه الصفحة من خلال الضغط على واجب معين من
+            صفحة المقرر الدراسي</p>
+          <RouterLink to="/instructor/courses"
+            class="bg-primary text-white px-6 py-3 rounded-xl font-bold text-sm shadow-lg shadow-primary/25 hover:bg-primary/90 transition-all">
+            الذهاب للدورات
+          </RouterLink>
+        </div>
+
+        <!-- Loading -->
+        <div v-else-if="isLoading" class="flex-1 flex items-center justify-center">
+          <span class="size-8 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></span>
+        </div>
+
+        <!-- Error -->
+        <div v-else-if="loadError" class="flex-1 flex flex-col items-center justify-center text-center p-8">
+          <span class="material-symbols-outlined text-4xl text-red-400 mb-3">error</span>
+          <p class="text-red-500 font-bold mb-2">{{ loadError }}</p>
+          <button @click="fetchSubmissions" class="text-primary text-sm font-bold hover:underline cursor-pointer">إعادة
+            المحاولة</button>
+        </div>
+
+        <!-- Empty -->
+        <div v-else-if="filteredSubmissions.length === 0"
+          class="flex-1 flex flex-col items-center justify-center text-center p-8">
+          <span class="material-symbols-outlined text-5xl text-text-muted/30 mb-3">assignment</span>
+          <p class="text-text-muted font-bold">لا توجد تسليمات بعد</p>
+        </div>
+
+        <!-- Table -->
+        <div v-else class="overflow-y-auto flex-1">
           <table class="w-full text-right border-collapse">
             <thead>
-              <tr class="bg-bg-base text-text-muted text-xs font-bold uppercase tracking-wider sticky top-0 md:text-sm">
+              <tr class="bg-bg-base text-text-muted text-xs font-bold uppercase tracking-wider sticky top-0">
                 <th class="px-6 py-4 border-b border-border-base">الطالب</th>
-                <th class="px-6 py-4 border-b border-border-base">تاريخ التسليم</th>
                 <th class="px-6 py-4 border-b border-border-base">الحالة</th>
                 <th class="px-6 py-4 border-b border-border-base">الدرجة</th>
+                <th class="px-6 py-4 border-b border-border-base">إجراء</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-border-base">
-              <tr class="hover:bg-primary/5 cursor-pointer transition-colors bg-primary/5 border-r-4 border-primary">
+              <tr v-for="sub in filteredSubmissions" :key="sub.id" class="cursor-pointer transition-colors"
+                :class="selectedSubmission?.id === sub.id ? 'bg-primary/5 border-r-4 border-primary' : 'hover:bg-bg-base/50'"
+                @click="selectSubmission(sub)">
                 <td class="px-6 py-4">
                   <div class="flex items-center gap-3">
-                    <div class="size-9 rounded-full bg-cover" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCMJGxNVLJipJVLPVqrqEgVkHzjJpByFZy57GcWUFRjWKvnUruH_WkyK6s8sxILcFigkGyQ5v80hLg8UmAyQT7vg6og2stHXNAxgev5ZhK4v5rXjULa5wplclEVqc3m7IgjvTQd0rGTbDkrr2ZoNeWFgHmfT_Xrd5KqWFL1c10hMruakQCfFMMcg69leLluSQ4ucKkgoj_hG-iSmnAlKgKdgC0G0NKDWJ5kHFvVhTQF2Acnh25pWeUybQt-d9MAt3RgTokd6GXCiVKx");'></div>
+                    <div
+                      class="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
+                      {{ getInitials(sub.student?.name || sub.student_name) }}
+                    </div>
                     <div>
-                      <p class="text-sm font-bold text-text-main">أحمد محمود العتيبي</p>
-                      <p class="text-xs text-text-muted">ID: 442001562</p>
+                      <p class="font-bold text-sm text-text-main">{{ sub.student?.name || sub.student_name || 'طالب' }}
+                      </p>
                     </div>
                   </div>
                 </td>
-                <td class="px-6 py-4 text-sm font-medium text-text-main">15 أكتوبر 2023 - 09:30 م</td>
                 <td class="px-6 py-4">
-                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">في الوقت</span>
+                  <span class="inline-flex items-center px-2 py-1 rounded-full text-[10px] font-bold"
+                    :class="sub.grade != null ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'">
+                    {{ sub.grade != null ? 'تم التصحيح' : 'بانتظار التصحيح' }}
+                  </span>
                 </td>
-                <td class="px-6 py-4 text-sm font-bold text-primary">-- / 100</td>
-              </tr>
-              <tr class="hover:bg-bg-base cursor-pointer transition-colors">
+                <td class="px-6 py-4 text-sm font-bold" :class="sub.grade != null ? 'text-primary' : 'text-text-muted'">
+                  {{ sub.grade != null ? sub.grade : '--' }}
+                </td>
                 <td class="px-6 py-4">
-                  <div class="flex items-center gap-3">
-                    <div class="size-9 rounded-full bg-cover" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA6yaH1gZ7ZTdq-mNMCClKriC4uRUjiu7ffJ8M-0w2gO0Cl4dnYcuCfh9DiyejEnW2O4GrMnYQVkUjeq-w7kFykFuCJzuz1qZIwvVvoFSRw3MtGlB4y7rPjTwa3PcT4BAJPCsUVOxOwLXyBUn2ZV2V0vImF2sbDw2o0C5fi2mLv4B0VkW6andrVgAqbMOSgmDoQ0CDA1zQ9-0uLQmxNWNK441O5j0XdcVA9oAZCy-gqDwK5uQf1I2KrcwHJHV6lJmjQ0xl3QtcgM6t9");'></div>
-                    <div>
-                      <p class="text-sm font-bold text-text-main">سارة خالد الشمري</p>
-                      <p class="text-xs text-text-muted">ID: 442001984</p>
-                    </div>
-                  </div>
+                  <button @click.stop="selectSubmission(sub)"
+                    class="text-primary text-xs font-bold hover:underline cursor-pointer">
+                    {{ sub.grade != null ? 'عرض' : 'تصحيح' }}
+                  </button>
                 </td>
-                <td class="px-6 py-4 text-sm font-medium text-text-main">15 أكتوبر 2023 - 11:15 م</td>
-                <td class="px-6 py-4">
-                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">متأخر (15 دقيقة)</span>
-                </td>
-                <td class="px-6 py-4 text-sm font-bold text-text-main">88 / 100</td>
-              </tr>
-              <tr class="hover:bg-bg-base cursor-pointer transition-colors">
-                <td class="px-6 py-4">
-                  <div class="flex items-center gap-3">
-                    <div class="size-9 rounded-full bg-primary flex items-center justify-center text-white font-bold text-xs">ن ص</div>
-                    <div>
-                      <p class="text-sm font-bold text-text-main">نورة صالح الزهراني</p>
-                      <p class="text-xs text-text-muted">ID: 442002133</p>
-                    </div>
-                  </div>
-                </td>
-                <td class="px-6 py-4 text-sm font-medium text-text-main">14 أكتوبر 2023 - 02:20 م</td>
-                <td class="px-6 py-4">
-                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">في الوقت</span>
-                </td>
-                <td class="px-6 py-4 text-sm font-bold text-text-main">95 / 100</td>
-              </tr>
-              <tr class="hover:bg-bg-base cursor-pointer transition-colors">
-                <td class="px-6 py-4">
-                  <div class="flex items-center gap-3">
-                    <div class="size-9 rounded-full bg-cover" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDTT35c1Z5vDJzsaZJKjzmNZzKKZsyymxqwOpjBWOzXqiApk1uFQetpGXr-V23lpjsgXrGABbpzSib2yzf67ZqSzFWXF-8-1rOmw5SmqbPY4A2i_bnSuJTaTmzsDnq76rxzt7MSNzoJHkUzDK7GFJSvBrIEDiKbCgmHjcnlGMZvp5heckkjrQzxldji-2KZCJBd412yYloaZpdu_xjRXPXMUNwCT9DmIElEVqaZnpdAJDNp8j-kVV0J3g0fd_eT-b1GeaZIKmXUnO26");'></div>
-                    <div>
-                      <p class="text-sm font-bold text-text-main">فيصل بن عبد العزيز</p>
-                      <p class="text-xs text-text-muted">ID: 442001440</p>
-                    </div>
-                  </div>
-                </td>
-                <td class="px-6 py-4 text-sm font-medium text-text-main">16 أكتوبر 2023 - 08:45 ص</td>
-                <td class="px-6 py-4">
-                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">لم يسلم</span>
-                </td>
-                <td class="px-6 py-4 text-sm font-bold text-gray-400">-- / 100</td>
               </tr>
             </tbody>
           </table>
         </div>
       </div>
-      <aside class="w-[480px] flex flex-col bg-bg-surface border-r border-border-base shadow-2xl z-40 transition-colors duration-300">
-        <div class="p-4 border-b border-border-base flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <span class="material-symbols-outlined text-primary">assignment</span>
-            <h3 class="text-lg font-bold text-text-main">تصحيح التسليم</h3>
-          </div>
-          <button class="p-1 hover:bg-bg-base rounded-full transition-colors text-text-muted">
-            <span class="material-symbols-outlined">close</span>
-          </button>
+
+      <!-- Grading Panel -->
+      <aside
+        class="w-[420px] flex flex-col bg-bg-surface border-r border-border-base shadow-2xl z-40 transition-colors duration-300">
+        <div v-if="!selectedSubmission" class="flex-1 flex flex-col items-center justify-center text-center p-8">
+          <span class="material-symbols-outlined text-5xl text-text-muted/20 mb-3">grading</span>
+          <p class="text-text-muted font-bold">اختر تسليمًا من القائمة للتصحيح</p>
         </div>
-        <div class="flex-1 overflow-y-auto p-6 flex flex-col gap-8">
-          <div class="flex flex-col gap-3">
-            <label class="text-sm font-bold text-text-main">الملف المرفق</label>
-            <div class="relative aspect-[3/4] bg-bg-base rounded-xl border-2 border-dashed border-border-base flex flex-col items-center justify-center p-6 text-center group transition-colors duration-300">
-              <div class="size-16 bg-bg-surface shadow-md rounded-lg flex items-center justify-center mb-4">
-                <span class="material-symbols-outlined text-red-500 text-4xl">picture_as_pdf</span>
-              </div>
-              <p class="text-sm font-bold text-text-main">Ahmed_Algorithms_v2.pdf</p>
-              <p class="text-xs text-text-muted mt-1">1.2 MB • تم التسليم في 15 أكتوبر</p>
-              <div class="absolute inset-0 bg-primary/80 opacity-0 group-hover:opacity-100 transition-opacity rounded-xl flex items-center justify-center gap-4">
-                <button class="bg-white text-primary px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 shadow-lg cursor-pointer">
-                  <span class="material-symbols-outlined">visibility</span>
-                  عرض
-                </button>
-                <button class="bg-white/20 text-white px-4 py-2 rounded-lg font-bold text-sm flex items-center gap-2 border border-white/50 cursor-pointer">
-                  <span class="material-symbols-outlined">download</span>
-                  تحميل
-                </button>
-              </div>
-            </div>
-          </div>
-          <div class="flex flex-col gap-3">
+
+        <template v-else>
+          <div class="p-5 border-b border-border-base">
             <div class="flex items-center justify-between">
-              <label class="text-sm font-bold text-text-main">رصد الدرجة</label>
-              <span class="text-xs text-primary font-medium">الحد الأقصى: 100</span>
-            </div>
-            <div class="flex items-center gap-4">
-              <div class="relative flex-1">
-                <input class="w-full h-12 pr-4 pl-12 rounded-lg border-border-base bg-bg-base text-text-main text-lg font-bold focus:ring-primary focus:border-primary outline-none" placeholder="0" type="number"/>
-                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted font-medium">/ 100</span>
+              <div>
+                <h3 class="font-bold text-text-main">{{ selectedSubmission.student?.name ||
+                  selectedSubmission.student_name || 'طالب' }}</h3>
+                <p class="text-xs text-text-muted mt-1">تسليم #{{ selectedSubmission.id }}</p>
               </div>
+              <button @click="selectedSubmission = null"
+                class="p-1 hover:bg-bg-base rounded-full transition-colors text-text-muted cursor-pointer">
+                <span class="material-symbols-outlined">close</span>
+              </button>
             </div>
           </div>
-          <div class="flex flex-col gap-3">
-            <label class="text-sm font-bold text-text-main">الملاحظات والتعليقات</label>
-            <div class="relative">
-              <textarea class="w-full p-4 rounded-lg border-border-base bg-bg-base text-sm text-text-main placeholder:text-text-muted focus:ring-primary focus:border-primary resize-none outline-none" placeholder="اكتب ملاحظاتك للطالب هنا..." rows="6"></textarea>
-              <div class="absolute bottom-3 left-3 flex gap-2">
-                <button class="p-1.5 hover:bg-bg-surface rounded-md text-text-muted">
-                  <span class="material-symbols-outlined text-xl">attach_file</span>
-                </button>
-                <button class="p-1.5 hover:bg-bg-surface rounded-md text-text-muted">
-                  <span class="material-symbols-outlined text-xl">mic</span>
-                </button>
+
+          <!-- File -->
+          <div v-if="selectedSubmission.file || selectedSubmission.file_path" class="p-5 border-b border-border-base">
+            <p class="text-xs font-bold text-text-muted mb-3">الملف المرفق</p>
+            <a :href="selectedSubmission.file || selectedSubmission.file_path" target="_blank"
+              class="flex items-center gap-3 p-3 rounded-xl bg-bg-base border border-border-base hover:border-primary/30 transition-colors">
+              <div class="size-10 rounded-lg bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center">
+                <span class="material-symbols-outlined text-blue-500">description</span>
               </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-bold text-text-main truncate">ملف التسليم</p>
+                <p class="text-xs text-primary">اضغط لعرض الملف</p>
+              </div>
+              <span class="material-symbols-outlined text-text-muted">open_in_new</span>
+            </a>
+          </div>
+
+          <!-- Grading Form -->
+          <div class="p-5 flex-1 flex flex-col gap-5 overflow-y-auto">
+            <div>
+              <label class="block text-sm font-bold text-text-main mb-2">الدرجة</label>
+              <input v-model.number="gradeForm.grade" type="number" min="0" dir="ltr"
+                class="w-full h-12 px-4 rounded-xl border border-border-base bg-bg-base text-text-main focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-lg font-bold" />
+            </div>
+            <div>
+              <label class="block text-sm font-bold text-text-main mb-2">ملاحظات / تعليق</label>
+              <textarea v-model="gradeForm.feedback" rows="4"
+                class="w-full px-4 py-3 rounded-xl border border-border-base bg-bg-base text-text-main focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all resize-none placeholder:text-text-muted"
+                placeholder="اكتب ملاحظاتك هنا..."></textarea>
             </div>
           </div>
-        </div>
-        <div class="p-6 border-t border-border-base flex flex-col gap-3 bg-bg-surface transition-colors duration-300">
-          <button class="w-full bg-primary hover:bg-primary/90 text-white h-12 rounded-lg font-bold flex items-center justify-center gap-2 transition-all shadow-lg shadow-primary/20 cursor-pointer">
-            <span class="material-symbols-outlined">save</span>
-            حفظ الدرجة
-          </button>
-          <div class="flex gap-3">
-            <button class="flex-1 bg-bg-base hover:bg-bg-surface-hover text-text-main h-11 rounded-lg font-bold flex items-center justify-center gap-2 transition-all cursor-pointer">
-              <span class="material-symbols-outlined">arrow_forward_ios</span>
-              الطالب السابق
-            </button>
-            <button class="flex-1 bg-bg-base hover:bg-bg-surface-hover text-text-main h-11 rounded-lg font-bold flex items-center justify-center gap-2 transition-all cursor-pointer">
-              الطالب التالي
-              <span class="material-symbols-outlined">arrow_back_ios</span>
+
+          <!-- Submit Grade -->
+          <div class="p-5 border-t border-border-base">
+            <button @click="submitGrade" :disabled="isGrading"
+              class="w-full bg-primary text-white py-3 rounded-xl font-bold text-sm shadow-lg shadow-primary/25 hover:bg-primary/90 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+              <span v-if="isGrading"
+                class="size-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+              <span v-else class="material-symbols-outlined text-lg">check_circle</span>
+              {{ isGrading ? 'جاري الحفظ...' : 'حفظ الدرجة' }}
             </button>
           </div>
-        </div>
+        </template>
       </aside>
     </main>
   </div>
 </template>
 
 <script setup>
-import { useRouter } from 'vue-router';
-const router = useRouter();
+import { coursesApi } from '@/api/courses';
+import { useApiErrors } from '@/composables/useApiErrors';
+import { useToast } from '@/composables/useToast';
+import { computed, onMounted, reactive, ref } from 'vue';
+import { useRoute } from 'vue-router';
+
+const route = useRoute();
+const { toast, showToast, hideToast } = useToast();
+const { getGeneralError } = useApiErrors();
+
+const isLoading = ref(false);
+const loadError = ref('');
+const noAssignment = ref(false);
+const submissions = ref([]);
+const selectedSubmission = ref(null);
+const searchQuery = ref('');
+const isGrading = ref(false);
+const assignmentId = ref(null);
+
+const gradeForm = reactive({
+  grade: 0,
+  feedback: '',
+});
+
+// ── Computed ────────────────────────────────────────────────────────
+
+const filteredSubmissions = computed(() => {
+  if (!searchQuery.value) return submissions.value;
+  const q = searchQuery.value.toLowerCase();
+  return submissions.value.filter(s =>
+    (s.student?.name || s.student_name || '').toLowerCase().includes(q)
+  );
+});
+
+// ── Helpers ──────────────────────────────────────────────────────────
+
+function getInitials(name) {
+  if (!name) return '?';
+  return name.split(' ').slice(0, 2).map(w => w[0]).join('');
+}
+
+function selectSubmission(sub) {
+  selectedSubmission.value = sub;
+  gradeForm.grade = sub.grade || 0;
+  gradeForm.feedback = sub.feedback || '';
+}
+
+// ── Fetch ────────────────────────────────────────────────────────────
+
+async function fetchSubmissions() {
+  isLoading.value = true;
+  loadError.value = '';
+
+  assignmentId.value = route.query.assignmentId ? Number(route.query.assignmentId) : null;
+
+  if (!assignmentId.value) {
+    noAssignment.value = true;
+    isLoading.value = false;
+    return;
+  }
+
+  try {
+    const { data } = await coursesApi.getAssignmentSubmissions(assignmentId.value);
+    submissions.value = data.data || data || [];
+  } catch (error) {
+    loadError.value = getGeneralError(error);
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+// ── Grade ────────────────────────────────────────────────────────────
+
+async function submitGrade() {
+  if (!selectedSubmission.value) return;
+  isGrading.value = true;
+
+  try {
+    await coursesApi.gradeSubmission(selectedSubmission.value.id, {
+      grade: gradeForm.grade,
+      feedback: gradeForm.feedback,
+    });
+
+    // Update local state
+    selectedSubmission.value.grade = gradeForm.grade;
+    selectedSubmission.value.feedback = gradeForm.feedback;
+
+    showToast('تم التصحيح', `تم حفظ الدرجة: ${gradeForm.grade}`, 'success');
+  } catch (error) {
+    showToast('خطأ', getGeneralError(error), 'error');
+  } finally {
+    isGrading.value = false;
+  }
+}
+
+// ── Init ────────────────────────────────────────────────────────────
+
+onMounted(fetchSubmissions);
 </script>
 
 <style scoped>
-/* Scoped styles */
+.toast-enter-active,
+.toast-leave-active {
+  transition: all 0.3s ease;
+}
+
+.toast-enter-from,
+.toast-leave-to {
+  opacity: 0;
+  transform: translate(-50%, 20px);
+}
 </style>

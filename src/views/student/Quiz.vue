@@ -1,5 +1,30 @@
 <template>
   <div class="bg-bg-base text-text-main min-h-screen flex flex-col transition-colors duration-200 font-display">
+    <!-- Toast Notification -->
+    <Transition name="toast">
+      <div v-if="toast.show"
+        class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 px-6 py-4 rounded-xl shadow-2xl border backdrop-blur-md transition-all duration-300 min-w-[320px] max-w-[90vw] cursor-pointer hover:scale-[1.02]"
+        :class="toast.type === 'success' ? 'bg-emerald-50/95 border-emerald-200 dark:bg-emerald-900/95 dark:border-emerald-800' : 'bg-red-50/95 border-red-200 dark:bg-red-900/95 dark:border-red-800'"
+        @click="hideToast">
+        <div class="p-2 rounded-full"
+          :class="toast.type === 'success' ? 'bg-emerald-100 dark:bg-emerald-800 text-emerald-600 dark:text-emerald-200' : 'bg-red-100 dark:bg-red-800 text-red-600 dark:text-red-200'">
+          <span class="material-symbols-outlined text-xl">
+            {{ toast.type === 'success' ? 'check_circle' : 'error' }}
+          </span>
+        </div>
+        <div class="flex flex-col flex-1">
+          <h4 class="font-bold text-sm"
+            :class="toast.type === 'success' ? 'text-emerald-900 dark:text-emerald-100' : 'text-red-900 dark:text-red-100'">
+            {{ toast.title }}</h4>
+          <p class="text-xs opacity-90"
+            :class="toast.type === 'success' ? 'text-emerald-800 dark:text-emerald-200' : 'text-red-800 dark:text-red-200'">
+            {{ toast.message }}</p>
+        </div>
+        <button class="hover:bg-black/5 dark:hover:bg-white/5 rounded-full p-1 transition-colors">
+          <span class="material-symbols-outlined text-lg opacity-60">close</span>
+        </button>
+      </div>
+    </Transition>
     <!-- Header -->
     <header class="sticky top-0 z-50 w-full bg-bg-surface border-b border-border-base shadow-sm">
       <div class="max-w-[1280px] mx-auto px-4 lg:px-10 py-3 flex items-center justify-between">
@@ -12,8 +37,8 @@
           </div>
           <div class="h-8 w-[1px] bg-border-base hidden sm:block"></div>
           <div class="flex flex-col">
-            <h2 class="text-text-main text-sm lg:text-base font-bold leading-tight">أساسيات هندسة البرمجيات</h2>
-            <p class="text-text-muted text-[10px] lg:text-xs">الوحدة الثانية: لغات البرمجة</p>
+            <h2 class="text-text-main text-sm lg:text-base font-bold leading-tight">{{ quiz?.title || 'جاري التحميل...' }}</h2>
+            <p class="text-text-muted text-[10px] lg:text-xs">{{ quiz?.description || `${totalQuestions} سؤال` }}</p>
           </div>
         </div>
         <div class="flex items-center gap-4 lg:gap-8">
@@ -23,7 +48,10 @@
               <span>{{ formattedTime.h }}</span><span>:</span><span>{{ formattedTime.m }}</span><span>:</span><span>{{ formattedTime.s }}</span>
             </div>
           </div>
-          <div class="hidden md:block bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-primary/20" data-alt="Student profile avatar" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBykAEwHl8V8vZ1_V7FpukYTOrjsAEqOdBLWiBrv-cJH4ckg0_KUHhE4NDR9F6P13WT3LQ6yoqY5ug6y6VwIDgGQdaOH5p5ywVsgZCQFhN85dirAKu5inxncCwYVxl5vuCRXJ3iNYvC6-7e452dhKOphrtpqte7U2O93z0p2pZfskHX_oMHEJhFLerTMue7GzyafNNwn5mVZq5CfgwxIYhmC8_AA7dfDkqlM117-h7FlcE-EK8YgdpF9bvaAV08h3pfBWoFxeuFfC-X");'></div>
+          <div class="hidden md:flex bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-primary/20 items-center justify-center bg-primary/5" data-alt="Student profile avatar" 
+          :style="{ backgroundImage: authStore.user?.profile_picture ? `url(${authStore.user.profile_picture})` : 'url(https://lh3.googleusercontent.com/aida-public/AB6AXuAvRrl-zLbMRME5_ZXm21NvDaOOyhhvHKSCYsKOJy-QqgMBibTlKedN0jo3iHQeFzCBU3DR9BuPTpkmdDki4zRSFsD9xaHTFfZnrznnHqlXBXFXGkFARsPgJWdt0nzr6R_RExEkaisv-0oSFF64VIObuVEfYfrW-lJHboFVx2rmc77K5uimZGtxhCHh42ED4jIzvRwmKv6R_FgczAcRorZuB_ZQP_1dZiwdXeCWK4iNhl7wqiDQS-kN-g73lrRjAOd_7usnj27t3AQg)' }">
+            <span v-if="!authStore.user?.profile_picture && !authStore.user" class="material-symbols-outlined text-text-muted text-[20px]">person</span>
+          </div>
         </div>
       </div>
     </header>
@@ -149,44 +177,58 @@
 </template>
 
 <script setup>
+import { quizApi } from '@/api/quiz';
+import { useToast } from '@/composables/useToast';
+import { useAuthStore } from '@/stores/auth';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
-const totalQuestions = 20;
-const currentQuestionIndex = ref(4); // Start at index 4 (Question 5)
-const selectedOption = ref(1); // Default select first option 'Kotlin' as per design
+const route = useRoute();
+const router = useRouter();
+const authStore = useAuthStore();
+const { toast, showToast, hideToast } = useToast();
+const quizId = route.params.id;
+
+const quiz = ref(null);
+const questions = ref([]);
+const attemptId = ref(null);
+const isLoading = ref(true);
+const isSubmitting = ref(false);
+
+const totalQuestions = computed(() => questions.value.length || 1);
+const currentQuestionIndex = ref(0);
+const selectedOption = ref(null);
+const answers = ref({}); // { questionId: optionId }
 
 const currentQuestion = computed(() => {
-    // In a real app, this would come from an array. For this specific UI request, we render the requested question.
+    if (questions.value.length === 0) {
+        return { id: 1, text: 'جاري التحميل...', options: [] };
+    }
+    const q = questions.value[currentQuestionIndex.value] || questions.value[0];
+    // Backend returns 'question' field, normalize to 'text'
     return {
-        id: currentQuestionIndex.value + 1,
-        text: 'ما هي لغة البرمجة المستخدمة في تطوير تطبيقات الأندرويد بشكل أساسي وتعتبر اللغة الرسمية المدعومة من جوجل حالياً؟',
-        options: [
-            { id: 1, text: 'Kotlin (كوتلن)' },
-            { id: 2, text: 'Swift (سويفت)' },
-            { id: 3, text: 'Python (بايثون)' },
-            { id: 4, text: 'C++ (سي بلس بلس)' }
-        ]
+        ...q,
+        text: q.text || q.question || q.question_text || '',
     };
 });
 
 const progress = computed(() => {
-    return Math.round(((currentQuestionIndex.value + 1) / totalQuestions) * 100);
+    return Math.round(((currentQuestionIndex.value + 1) / totalQuestions.value) * 100);
 });
 
 const remainingQuestions = computed(() => {
-    return totalQuestions - (currentQuestionIndex.value + 1);
+    return totalQuestions.value - (currentQuestionIndex.value + 1);
 });
 
 // Timer Logic
-const totalTimeSeconds = 45 * 60; // 45 minutes
-const timeRemaining = ref(totalTimeSeconds);
+const timeRemaining = ref(45 * 60); // Default 45 min, will be updated from quiz data
 let timerInterval;
 
 const formattedTime = computed(() => {
     const hours = Math.floor(timeRemaining.value / 3600);
     const minutes = Math.floor((timeRemaining.value % 3600) / 60);
     const seconds = timeRemaining.value % 60;
-    
+
     return {
         h: hours.toString().padStart(2, '0'),
         m: minutes.toString().padStart(2, '0'),
@@ -200,21 +242,32 @@ const startTimer = () => {
             timeRemaining.value--;
         } else {
             clearInterval(timerInterval);
+            submitQuiz();
         }
     }, 1000);
 };
 
 const nextQuestion = () => {
-    if (currentQuestionIndex.value < totalQuestions - 1) {
+    // Save current answer
+    if (selectedOption.value !== null) {
+        answers.value[currentQuestion.value.id] = selectedOption.value;
+    }
+    if (currentQuestionIndex.value < totalQuestions.value - 1) {
         currentQuestionIndex.value++;
-        selectedOption.value = null; // Reset selection
+        selectedOption.value = answers.value[questions.value[currentQuestionIndex.value]?.id] || null;
+    } else {
+        // Last question — submit the quiz
+        submitQuiz();
     }
 };
 
 const prevQuestion = () => {
     if (currentQuestionIndex.value > 0) {
+        if (selectedOption.value !== null) {
+            answers.value[currentQuestion.value.id] = selectedOption.value;
+        }
         currentQuestionIndex.value--;
-        selectedOption.value = null;
+        selectedOption.value = answers.value[questions.value[currentQuestionIndex.value]?.id] || null;
     }
 };
 
@@ -222,8 +275,88 @@ const skipQuestion = () => {
     nextQuestion();
 };
 
+const submitQuiz = async () => {
+    if (isSubmitting.value) return;
+
+    // Save last answer
+    if (selectedOption.value !== null) {
+        answers.value[currentQuestion.value.id] = selectedOption.value;
+    }
+
+    // If no attemptId, just go to dashboard
+    if (!attemptId.value) {
+        console.warn('[Quiz] No attemptId available, redirecting...');
+        router.push('/student/dashboard');
+        return;
+    }
+
+    isSubmitting.value = true;
+    try {
+        const answersPayload = Object.entries(answers.value).map(([questionId, optionId]) => ({
+            question_id: parseInt(questionId),
+            option_id: parseInt(optionId)
+        }));
+
+        const { data } = await quizApi.submitQuizAttempt(attemptId.value, { answers: answersPayload });
+        clearInterval(timerInterval);
+        
+        // Show score if available
+        const score = data.score ?? data.data?.score;
+        const total = questions.value.length;
+        if (score !== undefined) {
+            showToast('تمت الإجابة بنجاح! 🎉', `درجتك: ${score} من ${total}`, 'success', 5000);
+        }
+        
+        router.push('/student/dashboard');
+    } catch (error) {
+        console.error('[Quiz] Submit failed:', error);
+        const msg = error.response?.data?.message || 'فشل إرسال الإجابات';
+        showToast('خطأ في الإرسال', msg, 'error');
+    } finally {
+        isSubmitting.value = false;
+    }
+};
+
+const fetchAndStartQuiz = async () => {
+    isLoading.value = true;
+    try {
+        // Get quiz data — backend returns { success, quiz_id, title, duration_minutes, questions }
+        const { data: quizData } = await quizApi.getQuiz(quizId);
+        quiz.value = quizData.data || quizData;
+        questions.value = quiz.value.questions || [];
+
+        // Update header with real quiz title
+        if (quiz.value.title) {
+            document.title = quiz.value.title + ' — Smart Learn';
+        }
+
+        // Set timer from quiz duration
+        if (quiz.value.duration_minutes) {
+            timeRemaining.value = quiz.value.duration_minutes * 60;
+        } else if (quiz.value.duration_seconds) {
+            timeRemaining.value = quiz.value.duration_seconds;
+        }
+
+        // Start quiz attempt — backend returns { success, attempt_id }
+        const { data: attemptData } = await quizApi.startQuiz(quizId);
+        const attempt = attemptData.data || attemptData;
+        attemptId.value = attempt.attempt_id || attempt.id;
+
+        startTimer();
+    } catch (error) {
+        console.error('[Quiz] Failed to load:', error);
+        const msg = error.response?.data?.message || '';
+        if (msg.includes('already')) {
+            showToast('تنبيه', 'لقد أجريت هذا الاختبار مسبقاً.', 'error');
+            router.push('/student/dashboard');
+        }
+    } finally {
+        isLoading.value = false;
+    }
+};
+
 onMounted(() => {
-    startTimer();
+    fetchAndStartQuiz();
 });
 
 onUnmounted(() => {
@@ -242,5 +375,16 @@ input[type="radio"]:checked {
     background-position: center;
     background-repeat: no-repeat;
     background-size: 100% 100%;
+}
+
+.toast-enter-active,
+.toast-leave-active {
+    transition: all 0.3s ease;
+}
+
+.toast-enter-from,
+.toast-leave-to {
+    opacity: 0;
+    transform: translate(-50%, 20px);
 }
 </style>

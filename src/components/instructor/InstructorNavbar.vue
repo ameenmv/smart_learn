@@ -1,13 +1,21 @@
 <script setup>
 import { useDark, useToggle } from '@vueuse/core';
+import { useSidebar } from '@/composables/useSidebar';
 
 const isDark = useDark()
 const toggleDark = useToggle(isDark)
+const { toggle, isMobile } = useSidebar()
 </script>
 
 <template>
-  <header class="sticky top-0 z-10 bg-bg-surface/80 backdrop-blur-md border-b border-border-base px-8 h-16 flex items-center justify-between transition-colors duration-300">
+  <header class="sticky top-0 z-10 bg-bg-surface/80 backdrop-blur-md border-b border-border-base px-4 lg:px-8 h-16 flex items-center justify-between transition-colors duration-300">
     <div class="flex items-center gap-4">
+      <!-- Hamburger Menu (mobile only) -->
+      <button v-if="isMobile" @click="toggle"
+        class="flex items-center justify-center size-10 rounded-xl hover:bg-bg-surface-hover text-text-main transition-all cursor-pointer active:scale-95">
+        <span class="material-symbols-outlined text-2xl">menu</span>
+      </button>
+      
       <div class="flex items-center gap-2 flex-row-reverse">
         <div class="bg-primary rounded-xl size-9 flex items-center justify-center">
           <span class="material-symbols-outlined text-white text-xl" style="font-variation-settings: 'FILL' 1;">school</span>
@@ -16,7 +24,7 @@ const toggleDark = useToggle(isDark)
       </div>
     </div>
     <div class="flex items-center gap-6">
-      <div class="relative w-64 group hidden md:block">
+      <div class="relative w-64 group hidden lg:block">
         <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-text-muted group-focus-within:text-primary transition-colors">search</span>
         <input class="w-full h-10 pr-10 bg-bg-base border-none rounded-lg text-sm focus:ring-2 focus:ring-primary/20 placeholder:text-text-muted transition-colors text-text-main" placeholder="بحث عن دورة..." type="text"/>
       </div>

@@ -21,53 +21,71 @@
         </div>
     </Transition>
 
-    <nav class="flex flex-wrap gap-2 text-sm font-medium">
+    <nav class="flex flex-wrap gap-2 text-sm font-medium mb-4">
       <RouterLink class="text-text-muted hover:text-primary transition-colors" to="/student/dashboard">الرئيسية</RouterLink>
       <span class="text-text-muted">/</span>
       <RouterLink class="text-text-muted hover:text-primary transition-colors" to="/student/courses">المقررات الدراسية</RouterLink>
       <span class="text-text-muted">/</span>
       <span class="text-primary">تسليم الواجب</span>
     </nav>
-    <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
-      <div class="flex flex-col gap-2">
-        <h1 class="text-3xl md:text-4xl font-black tracking-tight text-text-main leading-tight">
-          تسليم الواجب: تصميم واجهات المستخدم
-        </h1>
-        <p class="text-text-muted text-lg">يرجى مراجعة التعليمات قبل رفع الملف النهائي</p>
-      </div>
-      <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-200 text-sm font-bold border border-yellow-200 dark:border-yellow-900/50">
-        <span class="material-symbols-outlined text-base">info</span>
-        لم يتم التسليم
-      </div>
+
+    <!-- Loading State -->
+    <div v-if="isLoading" class="flex flex-col items-center justify-center py-32 space-y-4">
+      <span class="material-symbols-outlined animate-spin text-5xl text-primary">progress_activity</span>
+      <p class="text-text-muted font-medium">جاري تحميل بيانات الواجب...</p>
     </div>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div class="flex items-center gap-4 rounded-xl p-6 bg-bg-surface border border-border-base shadow-sm transition-colors duration-300">
-        <div class="flex items-center justify-center size-12 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400">
-          <span class="material-symbols-outlined">event</span>
-        </div>
-        <div class="flex flex-col">
-          <p class="text-text-muted text-xs md:text-sm font-medium">تاريخ التسليم النهائي</p>
-          <p class="text-text-main text-xl font-bold">٢٥ ديسمبر، ٢٠٢٣</p>
-        </div>
+
+    <!-- Empty/Not Found State -->
+    <div v-else-if="!assignment" class="flex flex-col items-center justify-center py-20 text-center bg-bg-surface border border-border-base border-dashed rounded-xl mt-6">
+      <div class="size-20 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center text-red-600 mb-4">
+        <span class="material-symbols-outlined text-4xl">assignment_late</span>
       </div>
-      <div class="flex items-center gap-4 rounded-xl p-6 bg-bg-surface border border-border-base shadow-sm transition-colors duration-300">
-        <div class="flex items-center justify-center size-12 rounded-lg bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400">
-          <span class="material-symbols-outlined">grade</span>
-        </div>
-        <div class="flex flex-col">
-          <p class="text-text-muted text-xs md:text-sm font-medium">الدرجة الكلية</p>
-          <p class="text-text-main text-xl font-bold">١٠٠ نقطة</p>
-        </div>
-      </div>
+      <h3 class="text-xl font-bold text-text-main mb-2">لم يتم تحديد واجب</h3>
+      <p class="text-text-muted max-w-sm">الرجاء العودة إلى المقرر واختيار الواجب المطلوب لتسليمه.</p>
+      <RouterLink to="/student/courses" class="mt-6 px-6 py-2 bg-primary text-white font-bold rounded-lg hover:bg-primary/90 transition-colors">
+        العودة للمقررات
+      </RouterLink>
     </div>
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <div class="lg:col-span-2 space-y-6">
-        <div class="bg-bg-surface rounded-xl border border-border-base p-6 space-y-3 transition-colors duration-300">
-          <h3 class="text-lg font-bold text-text-main">التعليمات والمتطلبات</h3>
-          <p class="text-text-muted leading-relaxed">
-            المطلوب هو تصميم واجهة مستخدم لتطبيق جوال تعليمي. يجب أن يتضمن التصميم شاشة الدخول، الصفحة الرئيسية، وشاشة تفاصيل المادة. يرجى التأكد من اتباع معايير تجربة المستخدم المذكورة في المحاضرة الرابعة.
-          </p>
+
+    <template v-else>
+      <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mt-6">
+        <div class="flex flex-col gap-2">
+          <h1 class="text-3xl md:text-4xl font-black tracking-tight text-text-main leading-tight">
+            تسليم الواجب: {{ assignment.title || 'واجب دراسي' }}
+          </h1>
+          <p class="text-text-muted text-lg">يرجى مراجعة التعليمات قبل رفع الملف النهائي</p>
         </div>
+        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-200 text-sm font-bold border border-yellow-200 dark:border-yellow-900/50">
+          <span class="material-symbols-outlined text-base">info</span>
+          لم يتم التسليم
+        </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="flex items-center gap-4 rounded-xl p-6 bg-bg-surface border border-border-base shadow-sm transition-colors duration-300">
+          <div class="flex items-center justify-center size-12 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400">
+            <span class="material-symbols-outlined">event</span>
+          </div>
+          <div class="flex flex-col">
+            <p class="text-text-muted text-xs md:text-sm font-medium">تاريخ التسليم النهائي</p>
+            <p class="text-text-main text-xl font-bold">{{ assignment.due_date || 'غير محدد' }}</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-4 rounded-xl p-6 bg-bg-surface border border-border-base shadow-sm transition-colors duration-300">
+          <div class="flex items-center justify-center size-12 rounded-lg bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400">
+            <span class="material-symbols-outlined">grade</span>
+          </div>
+          <div class="flex flex-col">
+            <p class="text-text-muted text-xs md:text-sm font-medium">الدرجة الكلية</p>
+            <p class="text-text-main text-xl font-bold">{{ assignment.max_grade || 100 }} نقطة</p>
+          </div>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 space-y-6">
+          <div class="bg-bg-surface rounded-xl border border-border-base p-6 space-y-3 transition-colors duration-300">
+            <h3 class="text-lg font-bold text-text-main">التعليمات والمتطلبات</h3>
+            <p class="text-text-muted leading-relaxed whitespace-pre-wrap">{{ assignment.description || 'لا توجد تعليمات إضافية للواجب.' }}</p>
+          </div>
         <div class="bg-bg-surface rounded-xl border-2 border-dashed border-border-base p-12 flex flex-col items-center justify-center text-center gap-4 hover:border-primary/50 transition-colors cursor-pointer group"
              @click="triggerFileUpload"
              @dragover.prevent
@@ -139,16 +157,27 @@
         </div>
       </div>
     </div>
+    </template>
   </div>
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue';
+import { assignmentsApi } from '@/api/assignments';
+import { reactive, ref, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
 
+const props = defineProps({
+    assignmentId: { type: [Number, String], default: null }
+});
+
+const route = useRoute();
 const fileInput = ref(null);
 const selectedFile = ref(null);
 const isSubmitting = ref(false);
 const isSaving = ref(false);
+const isLoading = ref(true);
+const assignment = ref(null);
+const currentAssignmentId = ref(route.params.id || props.assignmentId);
 
 const toast = reactive({
     show: false,
@@ -187,19 +216,55 @@ const handleDrop = (event) => {
     }
 };
 
-const submitAssignment = () => {
+const fetchAssignment = async () => {
+    if (!currentAssignmentId.value) {
+        isLoading.value = false;
+        return;
+    }
+    
+    isLoading.value = true;
+    try {
+        const { data } = await assignmentsApi.getAssignment(currentAssignmentId.value);
+        assignment.value = data.data || data;
+    } catch (error) {
+        console.error('[Assignments] Fetch failed:', error);
+        showToast('خطأ', 'فشل تحميل بيانات الواجب التابعة لهذا الرابط', 'error');
+    } finally {
+        isLoading.value = false;
+    }
+};
+
+onMounted(() => {
+    fetchAssignment();
+});
+
+const submitAssignment = async () => {
     if (!selectedFile.value) {
         showToast('خطأ', 'يرجى اختيار ملف لإرفاقه أولاً', 'error');
         return;
     }
+
+    const assignmentId = currentAssignmentId.value;
+    if (!assignmentId) {
+        showToast('خطأ', 'فشل الإرسال: لا يوجد واجب محدد', 'error');
+        return;
+    }
+
     isSubmitting.value = true;
-    setTimeout(() => {
-        isSubmitting.value = false;
+    try {
+        const formData = new FormData();
+        formData.append('file', selectedFile.value);
+
+        await assignmentsApi.submitAssignment(assignmentId, formData);
         showToast('تم الإرسال', 'تم تسليم الواجب بنجاح', 'success');
-        // Reset file
         selectedFile.value = null;
         if (fileInput.value) fileInput.value.value = '';
-    }, 2000);
+    } catch (error) {
+        console.error('[Assignments] Submit failed:', error);
+        showToast('خطأ', 'فشل تسليم الواجب', 'error');
+    } finally {
+        isSubmitting.value = false;
+    }
 };
 
 const saveDraft = () => {
@@ -207,7 +272,7 @@ const saveDraft = () => {
      setTimeout(() => {
         isSaving.value = false;
         showToast('تم الحفظ', 'تم حفظ الواجب كمسودة');
-    }, 1500);
+    }, 500);
 };
 </script>
 

@@ -1,5 +1,5 @@
 {
-  "name": "mvlms",
+  "name": "smart-learn",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -12,6 +12,7 @@
     "@primevue/themes": "^4.5.4",
     "@tailwindcss/vite": "^4.1.11",
     "@vueuse/core": "^14.2.0",
+    "axios": "^1.13.6",
     "pinia": "^3.0.4",
     "primevue": "^4.5.4",
     "sass": "^1.97.3",

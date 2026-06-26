@@ -57,8 +57,8 @@
     <div class="lg:col-span-9 space-y-8 order-1 lg:order-1">
       <div class="stats-card-gradient rounded-[2rem] p-8 md:p-12 text-white relative overflow-hidden shadow-2xl shadow-primary/30">
         <div class="relative z-10">
-          <h1 class="text-3xl md:text-4xl font-black mb-3">أهلاً بك د. محمد</h1>
-          <p class="text-blue-100 text-lg max-w-lg leading-relaxed">نتمنى لك يوماً دراسياً ملهماً. لديك 3 محاضرات اليوم و 12 واجباً جديداً بانتظار تصحيحك.</p>
+          <h1 class="text-3xl md:text-4xl font-black mb-3">أهلاً بك {{ instructorName }}</h1>
+          <p class="text-blue-100 text-lg max-w-lg leading-relaxed">نتمنى لك يوماً دراسياً ملهماً. لديك {{ courses.length }} {{ courses.length === 1 ? 'مقرر' : 'مقررات' }} نشطة حالياً.</p>
           <div class="mt-8 flex flex-wrap gap-4">
             <RouterLink to="/instructor/lectures" class="bg-white text-primary px-6 py-3 rounded-xl font-black text-sm hover:bg-blue-50 transition-all cursor-pointer inline-block">إضافة محتوى جديد</RouterLink>
             <button class="bg-white/20 backdrop-blur-md text-white px-6 py-3 rounded-xl font-bold text-sm hover:bg-white/30 transition-all border border-white/30 cursor-pointer">سجل الغياب اليومي</button>
@@ -74,7 +74,7 @@
           </div>
           <div>
             <p class="text-text-muted text-sm font-bold">عدد الطلاب الإجمالي</p>
-            <h4 class="text-2xl font-black text-text-main">482</h4>
+            <h4 class="text-2xl font-black text-text-main">{{ totalStudents }}</h4>
           </div>
         </div>
         <div class="bg-bg-surface p-6 rounded-2xl shadow-sm border border-border-base flex items-center gap-5 transition-colors duration-300">
@@ -83,7 +83,7 @@
           </div>
           <div>
             <p class="text-text-muted text-sm font-bold">المقررات النشطة</p>
-            <h4 class="text-2xl font-black text-text-main">6</h4>
+            <h4 class="text-2xl font-black text-text-main">{{ courses.length }}</h4>
           </div>
         </div>
         <div class="bg-bg-surface p-6 rounded-2xl shadow-sm border border-border-base flex items-center gap-5 transition-colors duration-300">
@@ -91,87 +91,57 @@
             <span class="material-symbols-outlined text-3xl">grading</span>
           </div>
           <div>
-            <p class="text-text-muted text-sm font-bold">الواجبات بانتظار التصحيح</p>
-            <h4 class="text-2xl font-black text-text-main">12</h4>
+            <p class="text-text-muted text-sm font-bold">المقررات المتاحة</p>
+            <h4 class="text-2xl font-black text-text-main">{{ courses.length }}</h4>
           </div>
         </div>
       </div>
-      <div class="space-y-6">
+
+      <!-- Loading State -->
+      <div v-if="isLoading" class="flex justify-center py-12">
+        <span class="size-10 border-4 border-primary/30 border-t-primary rounded-full animate-spin"></span>
+      </div>
+
+      <div v-else class="space-y-6">
         <div class="flex items-center justify-between">
           <h3 class="text-2xl font-black text-text-main">مقرراتي الدراسية</h3>
           <RouterLink to="/instructor/courses" class="text-primary font-bold text-sm hover:underline">عرض جميع المقررات</RouterLink>
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          <div class="bg-bg-surface rounded-2xl shadow-sm border border-border-base overflow-hidden group hover:shadow-xl hover:shadow-slate-200/50 dark:hover:shadow-black/30 transition-all duration-300">
+
+        <!-- Empty State -->
+        <div v-if="courses.length === 0" class="bg-bg-surface rounded-2xl shadow-sm border border-border-base p-12 text-center">
+          <span class="material-symbols-outlined text-6xl text-text-muted/30 mb-4">school</span>
+          <h4 class="text-lg font-bold text-text-main mb-2">لا توجد مقررات بعد</h4>
+          <p class="text-text-muted mb-6">ابدأ بإنشاء أول مقرر دراسي لك</p>
+          <RouterLink to="/instructor/courses/create" class="bg-primary text-white px-6 py-3 rounded-xl font-bold hover:brightness-110 transition-all inline-block">إنشاء مقرر جديد</RouterLink>
+        </div>
+
+        <div v-else class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+          <div v-for="course in displayedCourses" :key="course.id" class="bg-bg-surface rounded-2xl shadow-sm border border-border-base overflow-hidden group hover:shadow-xl hover:shadow-slate-200/50 dark:hover:shadow-black/30 transition-all duration-300">
             <div class="h-40 bg-slate-200 dark:bg-slate-700 relative">
-              <img alt="Software Engineering" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCVlbM3n86QxdEa95wSPnvXNvU7lONyK2nDzBgGbLYc6Oe7Q2x12Cu_1DP2faozeEPJvHwJm1o0-ajPKME7I0DC99GqyVbchod2jy--_9pbtyDoyo8BE-GnIg26TygrX4FGYGVbBI2sW33VdkRc9wuVoRLZxoZKfxU2mvTY8ZX4889O1dAfLzW1bEPbNKX8tX9lszuylas6TUVDKARVF-k0eFxADVxq4EjXKl4Cii26fo7b3I6NzqTDSPFyNA8EcCXCyS6_yVG-QaEr"/>
+              <img v-if="course.image" :alt="course.title" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" :src="course.image"/>
+              <div v-else class="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-primary/5">
+                <span class="material-symbols-outlined text-5xl text-primary/30">auto_stories</span>
+              </div>
               <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-              <span class="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[10px] font-black text-primary">المستوى الرابع</span>
+              <span class="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[10px] font-black text-primary">{{ course.level || 'غير محدد' }}</span>
             </div>
             <div class="p-5">
-              <h4 class="text-lg font-black text-text-main mb-2">هندسة البرمجيات</h4>
+              <h4 class="text-lg font-black text-text-main mb-2">{{ course.title }}</h4>
               <div class="flex items-center gap-3 text-text-muted text-xs mb-6">
                 <span class="flex items-center gap-1">
                   <span class="material-symbols-outlined text-sm">group</span>
-                  125 طالب
+                  {{ course.students_count || 0 }} طالب
                 </span>
                 <span class="flex items-center gap-1">
                   <span class="material-symbols-outlined text-sm">menu_book</span>
-                  12 وحدة
+                  {{ course.lectures_count || 0 }} محاضرة
                 </span>
               </div>
-              <button class="w-full bg-primary text-white py-3 rounded-xl font-bold hover:brightness-110 transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2 cursor-pointer">
+              <RouterLink :to="`/instructor/courses/${course.id}/edit`" class="w-full bg-primary text-white py-3 rounded-xl font-bold hover:brightness-110 transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2 cursor-pointer">
                 إدارة المقرر
                 <span class="material-symbols-outlined text-sm">arrow_back</span>
-              </button>
-            </div>
-          </div>
-          <div class="bg-bg-surface rounded-2xl shadow-sm border border-border-base overflow-hidden group hover:shadow-xl hover:shadow-slate-200/50 dark:hover:shadow-black/30 transition-all duration-300">
-            <div class="h-40 bg-slate-200 dark:bg-slate-700 relative">
-              <img alt="Data Structures" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBUcE7w9O_4C_UqngtRJthtxe4G-eMfbJerCdMgNQZ-dDYUQjhKYzVM1iP3eb2nNkCLgZuJiC8VkDifI9a_Xg5V6UcNTvuc2AQoq1mRM9kSQ-J8s3UCqkA1erpj5UjZmcm08NgN5Oby_PtMivF2smrBb756grwFj1WRwmFmcPvtU_jBHK4ST3zHEcp-lWt3Lc6sIsXjDLH4e5iw4dQDft6Aqvm5Dy6caFH3S5h8yOE5FG4dQdaNxbq4FR2_-QthJiMER_JAjduhCo3P"/>
-              <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-              <span class="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[10px] font-black text-primary">المستوى الثاني</span>
-            </div>
-            <div class="p-5">
-              <h4 class="text-lg font-black text-text-main mb-2">تراكيب البيانات</h4>
-              <div class="flex items-center gap-3 text-text-muted text-xs mb-6">
-                <span class="flex items-center gap-1">
-                  <span class="material-symbols-outlined text-sm">group</span>
-                  84 طالب
-                </span>
-                <span class="flex items-center gap-1">
-                  <span class="material-symbols-outlined text-sm">menu_book</span>
-                  10 وحدات
-                </span>
-              </div>
-              <button class="w-full bg-primary text-white py-3 rounded-xl font-bold hover:brightness-110 transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2 cursor-pointer">
-                إدارة المقرر
-                <span class="material-symbols-outlined text-sm">arrow_back</span>
-              </button>
-            </div>
-          </div>
-          <div class="bg-bg-surface rounded-2xl shadow-sm border border-border-base overflow-hidden group hover:shadow-xl hover:shadow-slate-200/50 dark:hover:shadow-black/30 transition-all duration-300">
-            <div class="h-40 bg-slate-200 dark:bg-slate-700 relative">
-              <img alt="Operating Systems" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAcvw7Yt9fY_h8shn0z-3EYoe3MSvTCweUso7aA7xfJhcrBYc7FLlXSj4Zgt4KPqaviBzJMgaIVoiz_JcUTjwVQCtCukyHnA1dVHsUZwx-BVB7fGQoshNKcCv14D4HO4CXnM61plcPbJWUv4ieKY8UeaCPzYG6xFAYkAQ2mL25O5A6UClGHouaR_bByvpa2wI3i2X4A0CIltmHSIMlTBXawA1MnPjWwZD7aqSOXNH_G0viIOGmB42tB0iLLtBZL7COvY_yTiWM01D5p"/>
-              <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-              <span class="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[10px] font-black text-primary">المستوى الثالث</span>
-            </div>
-            <div class="p-5">
-              <h4 class="text-lg font-black text-text-main mb-2">نظم التشغيل</h4>
-              <div class="flex items-center gap-3 text-text-muted text-xs mb-6">
-                <span class="flex items-center gap-1">
-                  <span class="material-symbols-outlined text-sm">group</span>
-                  92 طالب
-                </span>
-                <span class="flex items-center gap-1">
-                  <span class="material-symbols-outlined text-sm">menu_book</span>
-                  14 وحدة
-                </span>
-              </div>
-              <button class="w-full bg-primary text-white py-3 rounded-xl font-bold hover:brightness-110 transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2 cursor-pointer">
-                إدارة المقرر
-                <span class="material-symbols-outlined text-sm">arrow_back</span>
-              </button>
+              </RouterLink>
             </div>
           </div>
         </div>
@@ -179,6 +149,46 @@
     </div>
   </div>
 </template>
+
+<script setup>
+import { coursesApi } from '@/api/courses'
+import { useAuthStore } from '@/stores/auth'
+import { computed, onMounted, ref } from 'vue'
+
+const authStore = useAuthStore()
+const courses = ref([])
+const isLoading = ref(true)
+
+const instructorName = computed(() => {
+  const name = authStore.user?.name
+  return name ? `د. ${name}` : 'د. محاضر'
+})
+
+const totalStudents = computed(() => {
+  return courses.value.reduce((sum, c) => sum + (c.students_count || 0), 0)
+})
+
+const displayedCourses = computed(() => {
+  return courses.value.slice(0, 3)
+})
+
+const fetchCourses = async () => {
+  isLoading.value = true
+  try {
+    const { data } = await coursesApi.getMyCourses()
+    courses.value = data.data || data || []
+  } catch (error) {
+    console.error('[Dashboard] Failed to load courses:', error)
+    courses.value = []
+  } finally {
+    isLoading.value = false
+  }
+}
+
+onMounted(() => {
+  fetchCourses()
+})
+</script>
 
 <style scoped>
 .stats-card-gradient {

@@ -61,10 +61,8 @@
                 <div class="relative">
                   <span class="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-text-muted">search</span>
                   <select v-model="formData.course" class="w-full h-12 pr-12 pl-4 bg-bg-base border-border-base rounded-xl text-sm focus:ring-2 focus:ring-primary/20 appearance-none text-text-main outline-none">
-                    <option value="">ابحث عن اسم المقرر...</option>
-                    <option value="1">مقدمة في الذكاء الاصطناعي (CS-102)</option>
-                    <option value="2">هياكل البيانات والخوارزميات (CS-205)</option>
-                    <option value="3">تصميم واجهة المستخدم (UX-401)</option>
+                    <option value="">{{ isLoadingCourses ? 'جاري التحميل...' : 'ابحث عن اسم المقرر...' }}</option>
+                    <option v-for="course in myCourses" :key="course.id" :value="course.id">{{ course.title }} {{ course.code ? `(${course.code})` : '' }}</option>
                   </select>
                   <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none">expand_more</span>
                 </div>
@@ -184,12 +182,19 @@
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { coursesApi } from '@/api/courses';
+import { onMounted, reactive, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 const router = useRouter();
+const route = useRoute();
 const isSaving = ref(false);
 const isPublishing = ref(false);
+const isLoadingCourses = ref(true);
+const myCourses = ref([]);
+
+// Quiz ID should come from query params e.g. /instructor/quizzes/assign?quizId=5
+const quizId = ref(route.query.quizId || null);
 
 const formData = reactive({
     course: '',
@@ -218,20 +223,43 @@ const showToast = (title, message, type = 'success') => {
     }, 3000);
 };
 
+const fetchCourses = async () => {
+    isLoadingCourses.value = true;
+    try {
+        const { data } = await coursesApi.getMyCourses();
+        myCourses.value = data.data || data || [];
+    } catch (error) {
+        console.error('[AssignQuiz] Failed to load courses:', error);
+        showToast('خطأ', 'فشل تحميل المقررات', 'error');
+    } finally {
+        isLoadingCourses.value = false;
+    }
+};
+
 const saveDraft = () => {
     isSaving.value = true;
+    // Saving as draft is local-only since the quiz is already created
     setTimeout(() => {
         isSaving.value = false;
         showToast('تم الحفظ', 'تم حفظ إعدادات التعيين كمسودة');
-    }, 1500);
+    }, 500);
 };
 
-const publishQuiz = () => {
+const publishQuiz = async () => {
+    if (!quizId.value) {
+        showToast('خطأ', 'لا يوجد اختبار لنشره', 'error');
+        return;
+    }
+    if (!formData.course) {
+        showToast('تنبيه', 'يرجى اختيار مقرر دراسي', 'error');
+        return;
+    }
+
     isPublishing.value = true;
-    setTimeout(() => {
-        isPublishing.value = false;
+    try {
+        await coursesApi.publishQuiz(quizId.value);
         showToast('تم النشر', 'تم تعيين الاختبار للمقرر بنجاح');
-        
+
         // Clear form
         formData.course = '';
         formData.startDate = '';
@@ -240,8 +268,21 @@ const publishQuiz = () => {
         formData.attempts = '';
         formData.showResults = true;
         formData.randomize = false;
-    }, 2000);
+
+        setTimeout(() => {
+            router.push('/instructor/courses');
+        }, 2000);
+    } catch (error) {
+        console.error('[AssignQuiz] Publish failed:', error);
+        showToast('خطأ', 'فشل نشر الاختبار', 'error');
+    } finally {
+        isPublishing.value = false;
+    }
 };
+
+onMounted(() => {
+    fetchCourses();
+});
 </script>
 
 <style scoped>

@@ -1,20 +1,22 @@
 <template>
-
-
   <div class="max-w-[1200px] mx-auto w-full flex flex-col gap-8 font-display">
     <!-- Welcome Section -->
     <section class="bg-bg-surface rounded-xl overflow-hidden shadow-sm border border-border-base transition-colors duration-300">
       <div class="flex flex-col md:flex-row items-center p-8 gap-8">
         <div class="flex-1">
-          <h3 class="text-3xl font-bold text-text-main mb-2">أهلاً بك مجدداً، أحمد 👋</h3>
-          <p class="text-text-muted text-lg leading-relaxed mb-6">لقد أنجزت 75% من أهدافك الأسبوعية حتى الآن في Smart Learn. استمر في هذا الأداء المتميز.</p>
+          <h3 class="text-3xl font-bold text-text-main mb-2">أهلاً بك مجدداً، {{ studentName }} 👋</h3>
+          <p v-if="isLoading" class="text-text-muted text-lg leading-relaxed mb-6 flex items-center gap-2">
+             جاري جلب إحصائيات مقرراتك... 
+             <span class="size-4 border-2 border-text-muted/30 border-t-text-muted rounded-full animate-spin"></span>
+          </p>
+          <p v-else class="text-text-muted text-lg leading-relaxed mb-6">لديك {{ courses.length }} {{ courses.length === 1 ? 'مقرر مسجل' : 'مقررات مسجلة' }} حالياً في Smart Learn. استمر في التعلم.</p>
           <div class="flex gap-3">
-            <RouterLink to="/student/schedule" class="bg-primary text-white px-6 py-2.5 rounded-lg font-bold text-sm shadow-lg shadow-primary/30 hover:bg-blue-700 transition-all cursor-pointer">
-              عرض الجدول الدراسي
+            <RouterLink to="/student/courses" class="bg-primary text-white px-6 py-2.5 rounded-lg font-bold text-sm shadow-lg shadow-primary/30 hover:bg-blue-700 transition-all cursor-pointer">
+              تصفح المقررات
             </RouterLink>
-            <RouterLink to="/student/schedule" class="bg-primary text-white px-6 py-2.5 rounded-lg font-bold text-sm shadow-lg shadow-primary/30 hover:bg-blue-700 transition-all cursor-pointer">
-              التقويم الأكاديمي            </RouterLink>
-          
+            <RouterLink to="/student/certificates" class="bg-bg-base text-text-main px-6 py-2.5 rounded-lg font-bold text-sm hover:bg-bg-base-hover transition-all cursor-pointer border border-border-base">
+              شهاداتي
+            </RouterLink>
           </div>
         </div>
         <div class="w-full md:w-1/3 h-48 bg-gradient-to-br from-primary/10 to-primary/30 rounded-xl flex items-center justify-center relative overflow-hidden">
@@ -26,38 +28,46 @@
 
     <!-- Stats Grid -->
     <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      <div class="bg-bg-surface p-6 rounded-xl border border-border-base shadow-sm flex flex-col gap-2 transition-colors duration-300">
-        <div class="flex items-center justify-between mb-2">
-          <span class="material-symbols-outlined text-primary bg-primary/10 p-2 rounded-lg">library_books</span>
-          <span class="text-green-600 text-sm font-bold bg-green-50 px-2 py-0.5 rounded-full">+2 جديد</span>
+      <!-- Loading Skeletons -->
+      <template v-if="isLoading">
+        <div v-for="i in 4" :key="'stat-skel-'+i" class="bg-bg-surface p-6 rounded-xl border border-border-base shadow-sm flex flex-col gap-2">
+          <div class="size-10 rounded-lg bg-border-base/50 animate-pulse mb-2"></div>
+          <div class="h-4 w-24 bg-border-base/50 rounded animate-pulse"></div>
+          <div class="h-8 w-12 bg-border-base/50 rounded animate-pulse mt-1"></div>
         </div>
-        <p class="text-text-muted text-sm">المقررات المسجلة</p>
-        <p class="text-3xl font-bold text-text-main">12</p>
-      </div>
-      <div class="bg-bg-surface p-6 rounded-xl border border-border-base shadow-sm flex flex-col gap-2 transition-colors duration-300">
-        <div class="flex items-center justify-between mb-2">
-          <span class="material-symbols-outlined text-orange-500 bg-orange-50 p-2 rounded-lg">stars</span>
-          <span class="text-green-600 text-sm font-bold bg-green-50 px-2 py-0.5 rounded-full">+150</span>
+      </template>
+
+      <!-- Actual Stats -->
+      <template v-else>
+        <div class="bg-bg-surface p-6 rounded-xl border border-border-base shadow-sm flex flex-col gap-2 transition-colors duration-300">
+          <div class="flex items-center justify-between mb-2">
+            <span class="material-symbols-outlined text-primary bg-primary/10 p-2 rounded-lg">library_books</span>
+          </div>
+          <p class="text-text-muted text-sm">المقررات المسجلة</p>
+          <p class="text-3xl font-bold text-text-main">{{ courses.length }}</p>
         </div>
-        <p class="text-text-muted text-sm">إجمالي النقاط</p>
-        <p class="text-3xl font-bold text-text-main">1,450</p>
-      </div>
-      <div class="bg-bg-surface p-6 rounded-xl border border-border-base shadow-sm flex flex-col gap-2 transition-colors duration-300">
-        <div class="flex items-center justify-between mb-2">
-          <span class="material-symbols-outlined text-purple-500 bg-purple-50 p-2 rounded-lg">workspace_premium</span>
-          <span class="text-green-600 text-sm font-bold bg-green-50 px-2 py-0.5 rounded-full">+1</span>
+        <div class="bg-bg-surface p-6 rounded-xl border border-border-base shadow-sm flex flex-col gap-2 transition-colors duration-300">
+          <div class="flex items-center justify-between mb-2">
+            <span class="material-symbols-outlined text-orange-500 bg-orange-50 p-2 rounded-lg dark:bg-orange-900/20">auto_stories</span>
+          </div>
+          <p class="text-text-muted text-sm">إجمالي المحاضرات</p>
+          <p class="text-3xl font-bold text-text-main">{{ totalLectures }}</p>
         </div>
-        <p class="text-text-muted text-sm">الشهادات المعتمدة</p>
-        <p class="text-3xl font-bold text-text-main">5</p>
-      </div>
-      <div class="bg-bg-surface p-6 rounded-xl border border-border-base shadow-sm flex flex-col gap-2 transition-colors duration-300">
-        <div class="flex items-center justify-between mb-2">
-          <span class="material-symbols-outlined text-blue-500 bg-blue-50 p-2 rounded-lg">analytics</span>
-          <span class="text-green-600 text-sm font-bold bg-green-50 px-2 py-0.5 rounded-full">+0.2</span>
+        <div class="bg-bg-surface p-6 rounded-xl border border-border-base shadow-sm flex flex-col gap-2 transition-colors duration-300">
+          <div class="flex items-center justify-between mb-2">
+            <span class="material-symbols-outlined text-purple-500 bg-purple-50 p-2 rounded-lg dark:bg-purple-900/20">workspace_premium</span>
+          </div>
+          <p class="text-text-muted text-sm">الشهادات</p>
+          <p class="text-3xl font-bold text-text-main">{{ certificatesCount }}</p>
         </div>
-        <p class="text-text-muted text-sm">المعدل التراكمي</p>
-        <p class="text-3xl font-bold text-text-main">3.85</p>
-      </div>
+        <div class="bg-bg-surface p-6 rounded-xl border border-border-base shadow-sm flex flex-col gap-2 transition-colors duration-300">
+          <div class="flex items-center justify-between mb-2">
+            <span class="material-symbols-outlined text-blue-500 bg-blue-50 p-2 rounded-lg dark:bg-blue-900/20">trending_up</span>
+          </div>
+          <p class="text-text-muted text-sm">المقررات النشطة</p>
+          <p class="text-3xl font-bold text-text-main">{{ activeCourses }}</p>
+        </div>
+      </template>
     </section>
 
     <!-- Continue Learning Section -->
@@ -66,161 +76,118 @@
         <h2 class="text-xl font-bold text-text-main">تابع التعلم</h2>
         <RouterLink class="text-primary text-sm font-bold hover:underline" to="/student/courses">عرض الكل</RouterLink>
       </div>
-      <div class="flex gap-6 overflow-x-auto pb-4 no-scrollbar">
-        <!-- Card 1 -->
-        <div class="min-w-[320px] bg-bg-surface rounded-xl overflow-hidden border border-border-base shadow-sm flex flex-col transition-colors duration-300">
-          <div class="h-36 bg-center bg-cover" data-alt="Python programming abstract illustration" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBRMYDdXa_k9a9PTrTyKyZDgc50waLYThwPz0xDuI1mlBpw517na43bh3uaEaaVPAK5Zd8uX9GntHJ7CX2Ijy5l-1XsJgxxTmVi0ENwggYpuxK_u0IEal4_viBuC-evGYwyQFbDrgQRU54VNW6U17ODO5IFqezMPrxrFfnN2ROVFLEWhrYVNTtRFxxFXW39RU6dIZHJb5IGO6mJjiJF_GcQdsjoBwN0lCKxpjEoM6VE1QCwJO5-0meBbZ7ikasUZyGkLSt_5yrzctxV");'></div>
-          <div class="p-5 flex flex-col gap-4">
-            <div>
-              <h4 class="font-bold text-base text-text-main mb-1">أساسيات برمجة بايثون</h4>
-              <p class="text-xs text-text-muted">د. مريم السعيد • كلية تكنولوجيا المعلومات</p>
-            </div>
-            <div>
-              <div class="flex justify-between text-xs mb-1.5">
-                <span class="text-text-muted">التقدم: 65%</span>
-                <span class="text-primary font-bold">12/18 درس</span>
-              </div>
-              <div class="w-full h-1.5 bg-bg-surface-hover rounded-full overflow-hidden">
-                <div class="bg-primary h-full rounded-full" style="width: 65%"></div>
-              </div>
-            </div>
-            <RouterLink to="/courses/101" class="w-full flex items-center justify-center py-2 bg-primary/10 text-primary font-bold text-sm rounded-lg hover:bg-primary hover:text-white transition-all cursor-pointer">استكمال المحاضرة</RouterLink>
-          </div>
-        </div>
-        <!-- Card 2 -->
-        <div class="min-w-[320px] bg-bg-surface rounded-xl overflow-hidden border border-border-base shadow-sm flex flex-col transition-colors duration-300">
-          <div class="h-36 bg-center bg-cover" data-alt="User interface design pattern" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCWi3LTHZh0VcQNKStLo8HIqScqmUvW-uN2cH_RUMt4OTIsC2hb9wOJuDwxm1AyPgMOf0nsCcXrPDcsl7ei2H9i2kixgiWRmOyi0Ypy44GG6tHsmKS-AaIVvCdUXAY4AAJUOdtugR-FO40UalcOVZbwwR9xXA516GLNepq7iRgr12Rt6yxtnhX-WCvGycfaGft8BpIWwcTfYFKTCqH2RhVLi_b1AoXf80KK4kiB_UwbERULECoZRwGPbEcPu1g73gY7O0pO_XfzfJnH");'></div>
-          <div class="p-5 flex flex-col gap-4">
-            <div>
-              <h4 class="font-bold text-base text-text-main mb-1">تصميم واجهات المستخدم UI/UX</h4>
-              <p class="text-xs text-text-muted">أ. خالد علي • قسم التصميم الرقمي</p>
-            </div>
-            <div>
-              <div class="flex justify-between text-xs mb-1.5">
-                <span class="text-text-muted">التقدم: 20%</span>
-                <span class="text-primary font-bold">4/20 درس</span>
-              </div>
-              <div class="w-full h-1.5 bg-bg-surface-hover rounded-full overflow-hidden">
-                <div class="bg-primary h-full rounded-full" style="width: 20%"></div>
-              </div>
-            </div>
-            <RouterLink to="/courses/101" class="w-full flex items-center justify-center py-2 bg-primary/10 text-primary font-bold text-sm rounded-lg hover:bg-primary hover:text-white transition-all cursor-pointer">استكمال المحاضرة</RouterLink>
-          </div>
-        </div>
-        <!-- Card 3 -->
-        <div class="min-w-[320px] bg-bg-surface rounded-xl overflow-hidden border border-border-base shadow-sm flex flex-col transition-colors duration-300">
-          <div class="h-36 bg-center bg-cover" data-alt="Mathematics and algorithm visualization" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBqt60lVsBrPFlCpCKgfW2ok7Xukk0R3Adx2XVnWuoMhKZ-saTz8vwL3SVOwGUvPkWYEHJ1OTR13F-5Q-kShHFb2YfEGvMlDpudHBG5URZxhGo6hFg0qDoOdqHJIsK-g2QF2oCIFpORKWXbtdijKGMxlnGI3jHPQcQA9oGPEn-6s4ZPTsbwIaYF08vLj8EnlhwnR4TTMkbj2sL0SSODPzYdpviQFYG1yqkqUK2_D0tab6xRNke5kdClsoLcCStKc0ecdU4s3gF037Xe");'></div>
-          <div class="p-5 flex flex-col gap-4">
-            <div>
-              <h4 class="font-bold text-base text-text-main mb-1">خوارزميات وهياكل البيانات</h4>
-              <p class="text-xs text-text-muted">د. يوسف عمر • قسم الحاسبات</p>
-            </div>
-            <div>
-              <div class="flex justify-between text-xs mb-1.5">
-                <span class="text-text-muted">التقدم: 90%</span>
-                <span class="text-primary font-bold">18/20 درس</span>
-              </div>
-              <div class="w-full h-1.5 bg-bg-surface-hover rounded-full overflow-hidden">
-                <div class="bg-primary h-full rounded-full" style="width: 90%"></div>
-              </div>
-            </div>
-            <RouterLink to="/student/courses/101" class="w-full flex items-center justify-center py-2 bg-primary/10 text-primary font-bold text-sm rounded-lg hover:bg-primary hover:text-white transition-all cursor-pointer">استكمال المحاضرة</RouterLink>
-          </div>
-        </div>
-      </div>
-    </section>
 
-    <!-- Analytics & Recommendations -->
-    <section class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
-      <!-- Analytics -->
-      <div class="lg:col-span-1 bg-bg-surface p-6 rounded-xl border border-border-base shadow-sm transition-colors duration-300">
-        <h2 class="text-lg font-bold text-text-main mb-6">تحليلات الأداء</h2>
-        <div class="flex flex-col gap-6">
-          <div class="flex items-center gap-4">
-            <div class="relative size-16 flex items-center justify-center">
-              <svg class="size-full -rotate-90">
-                <circle class="text-bg-surface-hover" cx="32" cy="32" fill="transparent" r="28" stroke="currentColor" stroke-width="6"></circle>
-                <circle class="text-primary" cx="32" cy="32" fill="transparent" r="28" stroke="currentColor" stroke-dasharray="176" stroke-dashoffset="35" stroke-width="6"></circle>
-              </svg>
-              <span class="absolute text-xs font-bold text-primary">80%</span>
+      <!-- Loading State -->
+      <div v-if="isLoading" class="flex gap-6 overflow-x-hidden pb-4">
+        <div v-for="i in 3" :key="'course-skel-'+i" class="min-w-[320px] bg-bg-surface rounded-xl overflow-hidden border border-border-base shadow-sm flex flex-col">
+          <div class="h-36 bg-border-base/30 animate-pulse"></div>
+          <div class="p-5 flex flex-col gap-4">
+            <div>
+              <div class="h-5 w-48 bg-border-base/50 rounded animate-pulse mb-2"></div>
+              <div class="h-3 w-32 bg-border-base/50 rounded animate-pulse"></div>
             </div>
             <div>
-              <p class="text-sm font-bold text-text-main">الحضور والمشاركة</p>
-              <p class="text-xs text-text-muted">ممتاز مقارنة بزملاء الدفعة</p>
+              <div class="flex justify-between mb-1.5">
+                <div class="h-3 w-16 bg-border-base/50 rounded animate-pulse"></div>
+                <div class="h-3 w-16 bg-border-base/50 rounded animate-pulse"></div>
+              </div>
+              <div class="w-full h-1.5 bg-border-base/30 rounded-full animate-pulse"></div>
             </div>
-          </div>
-          <div class="flex items-center gap-4">
-            <div class="relative size-16 flex items-center justify-center">
-              <svg class="size-full -rotate-90">
-                <circle class="text-bg-surface-hover" cx="32" cy="32" fill="transparent" r="28" stroke="currentColor" stroke-width="6"></circle>
-                <circle class="text-green-500" cx="32" cy="32" fill="transparent" r="28" stroke="currentColor" stroke-dasharray="176" stroke-dashoffset="70" stroke-width="6"></circle>
-              </svg>
-              <span class="absolute text-xs font-bold text-green-500">60%</span>
-            </div>
-            <div>
-              <p class="text-sm font-bold text-text-main">إنجاز التكاليف</p>
-              <p class="text-xs text-text-muted">لديك 3 تكاليف متبقية هذا الأسبوع</p>
-            </div>
-          </div>
-          <div class="mt-4 p-4 bg-primary/5 rounded-lg border border-primary/10">
-            <div class="flex items-center gap-2 mb-2">
-              <span class="material-symbols-outlined text-primary text-sm">auto_awesome</span>
-              <span class="text-xs font-bold text-primary">توصية الذكاء الاصطناعي</span>
-            </div>
-            <p class="text-xs text-text-muted leading-normal">
-              اقضِ 30 دقيقة إضافية في مراجعة "الخوارزميات" لتحسين نتيجتك المتوقعة بنسبة 15%.
-            </p>
+            <div class="h-9 w-full bg-border-base/50 rounded-lg animate-pulse mt-1"></div>
           </div>
         </div>
       </div>
 
-      <!-- Recommendations -->
-      <div class="lg:col-span-2 bg-bg-surface p-6 rounded-xl border border-border-base shadow-sm transition-colors duration-300">
-        <div class="flex items-center justify-between mb-6">
-          <h2 class="text-lg font-bold text-text-main flex items-center gap-2">
-            <span class="material-symbols-outlined text-primary">bolt</span>
-            مقترح لك خصيصاً في Smart Learn
-          </h2>
-          <span class="px-2 py-1 bg-primary/10 text-primary text-[10px] font-bold rounded uppercase tracking-wider">مدعوم بالذكاء الاصطناعي</span>
-        </div>
-        <div class="space-y-4">
-          <div class="flex items-center gap-4 p-4 rounded-xl hover:bg-bg-surface-hover transition-all border border-transparent hover:border-border-base cursor-pointer">
-            <div class="size-16 rounded-lg bg-center bg-cover flex-shrink-0" data-alt="Cyber security concept art" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAXNnC5nDlDcUmyGn_0R0_szP7iRtyZ38MK_oYfxok3VyRVCWq0BX7yW4ivOtX5S3dMYnDya_7Stg0kYz2atZXkhUnj02YFtV8EDuIZm-5KAivD_mx3WEvSzfb0qEy7qNqyu0XEPwi4mSb8lph0EyMMtvn8vOAqZNr6eIbjYPEHhASFh_Yov7Jh4pNu3-6Xr9Im0gvOZ2il8ufWwgxKUwbBM0bvmbh-lTKGodG3XAejB3-qD_JAiMVIgcoEVxdiyxsoOQMwEMt4eoKq");'></div>
-            <div class="flex-1">
-              <h4 class="text-sm font-bold text-text-main">الأمن السيبراني للمبتدئين</h4>
-              <p class="text-xs text-text-muted mt-1">بناءً على اهتمامك ببرمجة بايثون والشبكات</p>
-            </div>
-            <div class="flex items-center gap-4">
-              <div class="text-right">
-                <p class="text-xs font-bold text-primary">1200 طالب</p>
-                <p class="text-[10px] text-text-muted">4.9/5 ★</p>
-              </div>
-              <button class="p-2 text-primary hover:bg-primary/10 rounded-full">
-                <span class="material-symbols-outlined">add_circle</span>
-              </button>
+      <!-- Empty State -->
+      <div v-else-if="courses.length === 0" class="bg-bg-surface rounded-xl border border-border-base shadow-sm p-12 text-center">
+        <span class="material-symbols-outlined text-6xl text-text-muted/30 mb-4">school</span>
+        <h4 class="text-lg font-bold text-text-main mb-2">لا توجد مقررات مسجلة بعد</h4>
+        <p class="text-text-muted mb-6">ابدأ بتصفح المقررات المتاحة وسجل في ما يناسبك</p>
+        <RouterLink to="/student/courses" class="bg-primary text-white px-6 py-3 rounded-xl font-bold hover:brightness-110 transition-all inline-block">تصفح المقررات</RouterLink>
+      </div>
+
+      <!-- Course Cards -->
+      <div v-else class="flex gap-6 overflow-x-auto pb-4 no-scrollbar">
+        <div v-for="course in courses" :key="course.id"
+          class="min-w-[320px] bg-bg-surface rounded-xl overflow-hidden border border-border-base shadow-sm flex flex-col transition-colors duration-300">
+          <div class="h-36 bg-center bg-cover relative" :style="course.image ? `background-image: url('${course.image}')` : ''">
+            <div v-if="!course.image" class="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/20 to-primary/5">
+              <span class="material-symbols-outlined text-5xl text-primary/30">auto_stories</span>
             </div>
           </div>
-          <div class="flex items-center gap-4 p-4 rounded-xl hover:bg-bg-surface-hover transition-all border border-transparent hover:border-border-base cursor-pointer">
-            <div class="size-16 rounded-lg bg-center bg-cover flex-shrink-0" data-alt="Data visualization art" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA0MWEzTAWCh2uCUrtYUasoWfG1PiUSGKbb8F9tEHJRJPibEWmh6cJ6FMzsr65mt7MqJOLcULmliwCSGb8_cjXIJT4N0x0XtjfcoiTqB4vIQG985swVLtf7f6HK6fEoaokEFsm_5O4PGok-ERnsDhziGAGf7JykpwupTLFhIQOZh2zIDoEbBy7hEjgqhtrMS4DQ8QOcFXvDw2Ctgr-Lz_CNlS3_nxgZ6TNCwsO5SkENt4XxZVsf5b_7v78-S42KIb-kkRUqbIw2iQuJ");'></div>
-            <div class="flex-1">
-              <h4 class="text-sm font-bold text-text-main">تحليل البيانات الضخمة</h4>
-              <p class="text-xs text-text-muted mt-1">مهارة مطلوبة في سوق العمل لمجال تخصصك</p>
+          <div class="p-5 flex flex-col gap-4">
+            <div>
+              <h4 class="font-bold text-base text-text-main mb-1">{{ course.title }}</h4>
+              <p class="text-xs text-text-muted">{{ course.instructor_name || 'محاضر' }} • {{ course.level || '' }}</p>
             </div>
-            <div class="flex items-center gap-4">
-              <div class="text-right">
-                <p class="text-xs font-bold text-primary">850 طالب</p>
-                <p class="text-[10px] text-text-muted">4.7/5 ★</p>
+            <div v-if="course.progress !== undefined">
+              <div class="flex justify-between text-xs mb-1.5">
+                <span class="text-text-muted">التقدم: {{ course.progress || 0 }}%</span>
+                <span class="text-primary font-bold">{{ course.completed_lectures || 0 }}/{{ course.lectures_count || 0 }} درس</span>
               </div>
-              <button class="p-2 text-primary hover:bg-primary/10 rounded-full">
-                <span class="material-symbols-outlined">add_circle</span>
-              </button>
+              <div class="w-full h-1.5 bg-bg-surface-hover rounded-full overflow-hidden">
+                <div class="bg-primary h-full rounded-full transition-all" :style="`width: ${course.progress || 0}%`"></div>
+              </div>
             </div>
+            <RouterLink :to="`/student/courses/${course.id}`" class="w-full flex items-center justify-center py-2 bg-primary/10 text-primary font-bold text-sm rounded-lg hover:bg-primary hover:text-white transition-all cursor-pointer">استكمال المحاضرة</RouterLink>
           </div>
         </div>
       </div>
     </section>
   </div>
 </template>
+
+<script setup>
+import { certificatesApi } from '@/api/certificates'
+import { studentApi } from '@/api/student'
+import { useAuthStore } from '@/stores/auth'
+import { computed, onMounted, ref } from 'vue'
+
+const authStore = useAuthStore()
+
+const courses = ref([])
+const certificatesCount = ref(0)
+const isLoading = ref(true)
+
+const studentName = computed(() => {
+  return authStore.user?.name || 'طالب'
+})
+
+const totalLectures = computed(() => {
+  return courses.value.reduce((sum, c) => sum + (c.lectures_count || 0), 0)
+})
+
+const activeCourses = computed(() => {
+  return courses.value.filter(c => c.status === 'active' || !c.status).length
+})
+
+const fetchData = async () => {
+  isLoading.value = true
+  try {
+    const [coursesRes, certsRes] = await Promise.allSettled([
+      studentApi.getMyEnrolledCourses(),
+      certificatesApi.getMyCertificates()
+    ])
+
+    if (coursesRes.status === 'fulfilled') {
+      courses.value = coursesRes.value.data?.data || coursesRes.value.data || []
+    }
+
+    if (certsRes.status === 'fulfilled') {
+      const certs = certsRes.value.data?.data || certsRes.value.data || []
+      certificatesCount.value = Array.isArray(certs) ? certs.length : 0
+    }
+  } catch (error) {
+    console.error('[Student Dashboard] Error:', error)
+  } finally {
+    isLoading.value = false
+  }
+}
+
+onMounted(() => {
+  fetchData()
+})
+</script>
 
 <style scoped>
 .no-scrollbar::-webkit-scrollbar {
@@ -231,8 +198,3 @@
     scrollbar-width: none;
 }
 </style>
-
-<script setup>
-import { RouterLink } from 'vue-router';
-</script>
-import { RouterLink } from 'vue-router';
